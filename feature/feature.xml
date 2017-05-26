@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.siemens.bt.jazz.services.WorkItemBulkMover.feature"
+      label="REST Service"
+      version="1.0.0.qualifier"
+      provider-name="PROVIDER">
+
+   <description url="http://www.example.com/description">
+      REST Service for interacting with ClearQuest from Jazz.
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <requires>
+      <import plugin="com.ibm.team.repository.common"/>
+      <import plugin="com.ibm.team.repository.service"/>
+      <import plugin="com.ibm.team.repository.common.transport"/>
+      <import plugin="org.apache.http.client" version="4.1.2" match="greaterOrEqual"/>
+      <import plugin="org.apache.http" version="4.1.100" match="greaterOrEqual"/>
+      <import plugin="com.hp.hpl.jena" version="2.7.4" match="greaterOrEqual"/>
+      <import plugin="javax.xml.stream" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="javax.xml" version="1.3.4" match="greaterOrEqual"/>
+      <import plugin="org.apache.log4j"/>
+      <import plugin="com.ibm.icu"/>
+      <import plugin="org.apache.commons.codec"/>
+      <import plugin="org.apache.commons.lang"/>
+      <import plugin="org.apache.xerces"/>
+      <import plugin="com.ibm.team.workitem.service" version="3.1.1100" match="greaterOrEqual"/>
+      <import plugin="com.ibm.team.workitem.common" version="3.2.300" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.runtime" version="3.6.0" match="greaterOrEqual"/>
+      <import plugin="com.ibm.team.jfs.app.friendsconfig" match="greaterOrEqual"/>
+      <import plugin="com.ibm.team.jfs.app.discovery" version="1.2.2000" match="greaterOrEqual"/>
+      <import plugin="com.ibm.team.jfs.app.http" version="1.4.1000" match="greaterOrEqual"/>
+      <import plugin="com.ibm.team.jfs.app.http.client" version="1.2.1000" match="greaterOrEqual"/>
+      <import plugin="com.ibm.team.jfs.app.util" version="1.3.1000" match="greaterOrEqual"/>
+      <import plugin="com.ibm.team.jfs.app.resource" version="1.3.0" match="greaterOrEqual"/>
+      <import plugin="com.ibm.team.jfs.app.error" version="1.1.3000" match="greaterOrEqual"/>
+      <import plugin="com.ibm.team.jfs.app"/>
+      <import plugin="javax.servlet" version="2.5.0" match="greaterOrEqual"/>
+      <import plugin="org.apache.commons.logging"/>
+      <import plugin="org.eclipse.osgi"/>
+   </requires>
+
+   <plugin
+         id="com.siemens.bt.jazz.services.WorkItemBulkMover"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

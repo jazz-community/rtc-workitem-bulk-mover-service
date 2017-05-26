@@ -1,0 +1,32 @@
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+	<baseDirectory>/</baseDirectory>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<fileSets>
+		<fileSet>
+			<directory>${project.build.directory}/repository/features</directory>
+			<outputDirectory>${project.groupId}-update-site/features </outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/repository/plugins/</directory>
+			<outputDirectory>${project.groupId}-update-site/plugins </outputDirectory>
+		</fileSet>
+	</fileSets>
+	<files>
+		<file>
+			<source>${project.basedir}/templates/update-site.ini</source>
+			<outputDirectory>.</outputDirectory>
+			<destName>${project.groupId}-update-site.ini</destName>
+			<filtered>true</filtered>
+		</file>
+		<file>
+			<source>${project.basedir}/templates/site.xml</source>
+			<outputDirectory>${project.groupId}-update-site</outputDirectory>
+			<filtered>true</filtered>
+		</file>
+	</files>
+</assembly>
