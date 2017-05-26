@@ -4,7 +4,7 @@ While RTC supports to move a single Work Item from one project area to another, 
 This project contains the RTC web service extension only. It does not provide a user interface. The user interface can be found within the [Bulk Mover Plug-in](https://github.com/jazz-community/rtc-workitem-bulk-mover-ui) project. It provides a user interface to intract with this service.
 
 ## Setup Instructions
-The most convenient way to install this service is to download the current stable release from the [Releases](https://github.com/jazz-community/rtc-timeboxplanning/issues) page.
+The most convenient way to install this service is to download the current stable release from the [Releases](https://github.com/jazz-community/rtc-workitem-bulk-mover-service/releases) page.
 It is highly recommended to then follow the instructions provided in the [Bulk Mover Plug-in](https://github.com/jazz-community/rtc-workitem-bulk-mover-ui) project.
 
 ## API Reference
