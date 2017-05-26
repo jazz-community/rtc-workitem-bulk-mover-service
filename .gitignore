@@ -1,0 +1,7 @@
+target
+.git
+.idea
+.jazzignore
+.mvn
+.project
+*.iml
