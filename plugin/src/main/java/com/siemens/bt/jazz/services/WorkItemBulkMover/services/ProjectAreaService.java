@@ -18,8 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProjectAreaService extends AbstractRestService {
 
@@ -34,11 +34,12 @@ public class ProjectAreaService extends AbstractRestService {
             IContributorHandle contribHandle = processServerService.getAuthenticatedContributor();
             IRepositoryItemService itemService = parentService.getService(IRepositoryItemService.class);
             IContributor contributor = (IContributor) itemService.fetchItem(contribHandle, null);
-            List<ProjectArea> projectAreas = new ArrayList<ProjectArea>();
+            Map<String, ProjectArea> projectAreas = new HashMap<String, ProjectArea>();
             IProcessArea[] areas = processServerService.findProcessAreas(contributor, null, null);
             for(IProcessArea a : areas) {
                 IProjectArea pa = (IProjectArea) itemService.fetchItem(a.getProjectArea(), null);
-                projectAreas.add(new ProjectArea(pa.getItemId().toString(), pa.getName()));
+                String paId = pa.getItemId().toString();
+                projectAreas.put(paId, new ProjectArea(paId, pa.getName()));
             }
             String projectAreasJson = googleJson.toJson(projectAreas);
             response.getWriter().write(projectAreasJson);
