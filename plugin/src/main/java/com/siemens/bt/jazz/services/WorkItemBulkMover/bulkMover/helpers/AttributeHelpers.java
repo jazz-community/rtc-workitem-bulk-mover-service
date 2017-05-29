@@ -70,7 +70,7 @@ public final class AttributeHelpers {
                 CategoryHelpers.setCategory(targetWorkItem, valueId, workItemServer, monitor);
             } else if (WorkItemAttributes.TARGET.equals(identifier)) {
                 TargetHelpers.setTarget(targetWorkItem, valueId, workItemServer, monitor);
-            } else if (LiteralHelpers.isValidLiteral(attribute)) {
+            } else {//if (LiteralHelpers.isValidLiteral(attribute)) {
                 LiteralHelpers.setLiteral(targetWorkItem, attributeId, valueId, workItemServer, monitor);
             }
         }
