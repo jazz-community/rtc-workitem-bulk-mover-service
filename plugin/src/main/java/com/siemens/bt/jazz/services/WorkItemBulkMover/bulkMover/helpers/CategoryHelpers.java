@@ -32,10 +32,8 @@ public final class CategoryHelpers {
     public static final void setCategory(IWorkItem workItem, String categoryId,
                             IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         IProjectAreaHandle ipa = workItem.getProjectArea();
-        List<String> namePath = new ArrayList<String>(Arrays.asList(categoryId.split("/")));
-        while(namePath.remove(""));
-        while(namePath.remove("Unassigned"));
-        ICategoryHandle cat = workItemServer.findCategoryByNamePath(ipa, namePath, monitor);
+        CategoryId cid =  CategoryId.createCategoryId(categoryId);
+        ICategoryHandle cat = workItemServer.findCategoryById2(ipa, cid, monitor);
         workItem.setCategory(cat);
     }
 
