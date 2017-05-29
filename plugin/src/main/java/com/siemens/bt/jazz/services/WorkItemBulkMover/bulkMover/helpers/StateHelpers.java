@@ -48,10 +48,11 @@ public final class StateHelpers {
     public static final List<AttributeValue> addStatesAsValues(IProjectAreaHandle pa, IWorkItem wi,
                                                    IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         List<AttributeValue> values = new ArrayList<AttributeValue>();
-        ICombinedWorkflowInfos workFlowInfo = workItemServer.findCachedCombinedWorkflowInfos(pa);
+        IWorkflowInfo workFlowInfo = workItemServer.findCachedWorkflowInfo(wi);
         if (workFlowInfo == null) {
-            workFlowInfo = workItemServer.findCombinedWorkflowInfos(pa, monitor);
+            workFlowInfo = workItemServer.findWorkflowInfo(wi, monitor);
         }
+
         Identifier<IState>[] identifiers = workFlowInfo.getAllStateIds();
         int n = identifiers.length;
         int n2 = 0;
