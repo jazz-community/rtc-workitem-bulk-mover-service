@@ -4,6 +4,7 @@ import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.repository.common.TeamRepositoryException;
 import com.ibm.team.repository.service.IRepositoryItemService;
 import com.ibm.team.repository.service.TeamRawService;
+import com.ibm.team.workitem.common.internal.util.CategoriesHelper;
 import com.ibm.team.workitem.common.model.CategoryId;
 import com.ibm.team.workitem.common.model.ICategory;
 import com.ibm.team.workitem.common.model.ICategoryHandle;
@@ -32,9 +33,11 @@ public final class CategoryHelpers {
     public static final void setCategory(IWorkItem workItem, String categoryId,
                             IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         IProjectAreaHandle ipa = workItem.getProjectArea();
-        CategoryId cid =  CategoryId.createCategoryId(categoryId);
-        ICategoryHandle cat = workItemServer.findCategoryById2(ipa, cid, monitor);
-        workItem.setCategory(cat);
+        if(isValidCategoryId(categoryId)) {
+            CategoryId cid =  CategoryId.createCategoryId(categoryId);
+            ICategoryHandle cat = workItemServer.findCategoryById2(ipa, cid, monitor);
+            workItem.setCategory(cat);
+        }
     }
 
     public static final List<AttributeValue> addCategoriesAsValues(IProjectAreaHandle pa,
@@ -50,5 +53,9 @@ public final class CategoryHelpers {
             values.add(new AttributeValue(idString, fullPathname));
         }
         return values;
+    }
+
+    public static boolean isValidCategoryId(String string) {
+        return string.startsWith("/") && string.indexOf("/", "/".length()) != -1;
     }
 }
