@@ -2,14 +2,15 @@ package com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
+import com.ibm.team.repository.common.IAuditable;
+import com.ibm.team.workitem.common.ISaveParameter;
+import com.ibm.team.workitem.common.internal.IAdditionalSaveParameters;
+import com.ibm.team.workitem.common.internal.SaveOperationParameter;
+import com.ibm.team.workitem.common.internal.SaveParameter;
+import com.ibm.team.workitem.common.internal.rcp.dto.impl.SaveParameterDTOImpl;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.AttributeHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.LiteralHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.WorkItemTypeHelpers;
@@ -235,8 +236,10 @@ public class WorkItemMover {
 	@SuppressWarnings("restriction")
 	public IStatus MoveAll(List<IWorkItem> workItems) throws TeamRepositoryException {
 		List<IWorkItemWrapper> wrappedWorkItems = new ArrayList<IWorkItemWrapper>();
+		Set<String> saveParams = new HashSet<String>();
+		saveParams.add(IAdditionalSaveParameters.UPDATE_EXTENDED_RICH_TEXT);
 		for(IWorkItem w : workItems) {
-			wrappedWorkItems.add(new WorkItemWrapper(w, null, null));
+			wrappedWorkItems.add(new WorkItemWrapper(w, null, null, saveParams, Collections.<IAuditable>emptySet()));
 		}
 		IStatus s = workItemServer.saveWorkItems(wrappedWorkItems);
 		return s;
