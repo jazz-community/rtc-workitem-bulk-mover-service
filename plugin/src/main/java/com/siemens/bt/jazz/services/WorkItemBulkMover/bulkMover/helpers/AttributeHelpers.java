@@ -46,8 +46,9 @@ public final class AttributeHelpers {
             IWorkItem.APPROVALS_PROPERTY,
             // comments are type and project are independent, no changes needed
             IWorkItem.COMMENTS_PROPERTY,
-            // TODO describe why the properties below can be safely ignored
-            IWorkItem.CUSTOM_ATTRIBUTES_PROPERTY, //TODO make dynamic
+            // custom attributes are not moveable if they do not exist in the target area
+            IWorkItem.CUSTOM_ATTRIBUTES_PROPERTY,
+            // the following attributes are automatically tracked by the server itself
             IWorkItem.CONTEXT_ID_PROPERTY,
             IItem.ITEM_ID_PROPERTY,
             IWorkItem.STATE_TRANSITIONS_PROPERTY
@@ -70,7 +71,7 @@ public final class AttributeHelpers {
                 CategoryHelpers.setCategory(targetWorkItem, valueId, workItemServer, monitor);
             } else if (WorkItemAttributes.TARGET.equals(identifier)) {
                 TargetHelpers.setTarget(targetWorkItem, valueId, workItemServer, monitor);
-            } else {//if (LiteralHelpers.isValidLiteral(attribute)) {
+            } else {
                 LiteralHelpers.setLiteral(targetWorkItem, attributeId, valueId, workItemServer, monitor);
             }
         }
@@ -96,8 +97,6 @@ public final class AttributeHelpers {
                 value = CategoryHelpers.getCategory(attributeValue, workItemServer, teamRawService, monitor);
             } else if (WorkItemAttributes.TARGET.equals(identifier)) {
                 value = TargetHelpers.getTarget(attributeValue, auditSrv, workItemServer, teamRawService, monitor);
-            } else if (WorkItemAttributes.CUSTOM_ATTRIBUTES.equals(identifier)) {
-                //handleCustomAttributes(attribute, workItem);
             } else {
                 value = LiteralHelpers.getLiteral(attribute, attributeValue, workItemServer, monitor);
             }
@@ -121,54 +120,9 @@ public final class AttributeHelpers {
             values = CategoryHelpers.addCategoriesAsValues(pa, workItemServer, monitor);
         } else if (WorkItemAttributes.TARGET.equals(identifier)) {
             values = TargetHelpers.addTargetsAsValues(pa, workItemServer, monitor);
-        } else if (WorkItemAttributes.CUSTOM_ATTRIBUTES.equals(identifier)) {
-            values = handleCustomAttributes(attribute, workItem);
         } else {
             values = LiteralHelpers.addLiteralsAsValues(attribute, workItemServer, monitor);
         }
         return values;
-    }
-
-    /*
-     * TODO fix this
-     */
-    public List<AttributeValue> handleCustomAttributes(IAttribute attribute, IWorkItem workItem) throws TeamRepositoryException {
-        List<AttributeValue> vla = new ArrayList<AttributeValue>();
-        IAuditableServer auditSrv = workItemServer.getAuditableServer();
-        IRepositoryItemService itemService = teamRawService.getService(IRepositoryItemService.class);
-
-        Object s_val = attribute.getValue(auditSrv, workItem, monitor);
-        if(s_val instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<IAttributeHandle> customAttrs = (List<IAttributeHandle>)s_val;
-            for(IAttributeHandle attrHandle: customAttrs) {
-                IAttribute attr = (IAttribute) itemService.fetchItem(attrHandle, null);
-                AttributeValue attrVal = getCurrentValueRepresentation(attr, workItem);
-                vla = getAvailableOptionsPresentations(attr, workItem);
-                String id = attr.getIdentifier();
-                Object val = attr.getValue(auditSrv, workItem, monitor);
-                Class c = val.getClass();
-                //ILiteral lit = (ILiteral)val;
-                Identifier<? extends ILiteral> identifier = (Identifier<? extends ILiteral>)val;
-                String sid = identifier.getStringIdentifier();
-                IEnumeration<? extends ILiteral> enumeration = workItemServer.resolveEnumeration(attr, monitor);
-                List<? extends ILiteral> list = enumeration.getEnumerationLiterals(false);
-                for (ILiteral literal : list) {
-                    if(sid.equals(literal.getIdentifier2().getStringIdentifier())) {
-                        String chosenLit = literal.getName();
-                        chosenLit.toLowerCase();
-                    }
-                }
-//				if(val instanceof LiteralImpl) {
-//					LiteralImpl limpl = (LiteralImpl)val;
-//					String str = limpl.getString();
-//					Object limplVal = limpl.getValue();
-//				}
-                boolean issame = id ==val;
-            }
-        } else {
-            vla = vla;
-        }
-        return vla;
     }
 }
