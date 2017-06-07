@@ -2,7 +2,7 @@
 <feature
       id="com.siemens.bt.jazz.services.WorkItemBulkMover.feature"
       label="REST Service"
-      version="1.0.0.qualifier"
+      version="1.0.2.qualifier"
       provider-name="PROVIDER">
 
    <description url="http://www.example.com/description">
