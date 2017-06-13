@@ -1,16 +1,11 @@
 package com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers;
 
-import com.ibm.team.process.common.IIteration;
 import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.repository.common.IItem;
 import com.ibm.team.repository.common.TeamRepositoryException;
-import com.ibm.team.repository.service.IRepositoryItemService;
 import com.ibm.team.repository.service.TeamRawService;
 import com.ibm.team.workitem.common.internal.model.WorkItemAttributes;
-import com.ibm.team.workitem.common.internal.util.IterationsHelper;
 import com.ibm.team.workitem.common.model.*;
-import com.ibm.team.workitem.common.workflow.ICombinedWorkflowInfos;
-import com.ibm.team.workitem.common.workflow.IWorkflowInfo;
 import com.ibm.team.workitem.service.IAuditableServer;
 import com.ibm.team.workitem.service.IWorkItemServer;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.AttributeValue;
@@ -71,6 +66,8 @@ public final class AttributeHelpers {
                 CategoryHelpers.setCategory(targetWorkItem, valueId, workItemServer, monitor);
             } else if (WorkItemAttributes.TARGET.equals(identifier)) {
                 TargetHelpers.setTarget(targetWorkItem, valueId, workItemServer, monitor);
+            } else if (WorkItemAttributes.VERSION.equals(identifier)) {
+                FoundInHelpers.setFoundIn(targetWorkItem, valueId, workItemServer, monitor);
             } else {
                 LiteralHelpers.setLiteral(targetWorkItem, attributeId, valueId, workItemServer, monitor);
             }
@@ -97,6 +94,8 @@ public final class AttributeHelpers {
                 value = CategoryHelpers.getCategory(attributeValue, workItemServer, teamRawService, monitor);
             } else if (WorkItemAttributes.TARGET.equals(identifier)) {
                 value = TargetHelpers.getTarget(attributeValue, auditSrv, workItemServer, teamRawService, monitor);
+            } else if (WorkItemAttributes.VERSION.equals(identifier)) {
+                value = FoundInHelpers.getFoundIn(attributeValue, workItemServer, teamRawService, monitor);
             } else {
                 value = LiteralHelpers.getLiteral(attribute, attributeValue, workItemServer, monitor);
             }
@@ -120,6 +119,8 @@ public final class AttributeHelpers {
             values = CategoryHelpers.addCategoriesAsValues(pa, workItemServer, monitor);
         } else if (WorkItemAttributes.TARGET.equals(identifier)) {
             values = TargetHelpers.addTargetsAsValues(pa, workItemServer, monitor);
+        } else if (WorkItemAttributes.VERSION.equals(identifier)) {
+            values = FoundInHelpers.addFoundInAsValues(pa, teamRawService, workItemServer, monitor);
         } else {
             values = LiteralHelpers.addLiteralsAsValues(attribute, workItemServer, monitor);
         }
