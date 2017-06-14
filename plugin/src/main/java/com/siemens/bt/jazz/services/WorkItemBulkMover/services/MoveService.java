@@ -50,14 +50,19 @@ public class MoveService extends AbstractRestService {
         JsonObject responseJson = new JsonObject();
         WorkItemMover mover = new WorkItemMover(parentService);
         boolean isMoved = false;
+        boolean previewOnly = false;
         Collection<AttributeDefinition> moveResults = null;
 
         // read request data
         JsonObject workItemData = RequestReader.readAsJson(request);
+        JsonPrimitive previewPrimitive = workItemData.getAsJsonPrimitive("previewOnly");
         JsonPrimitive targetPA = workItemData.getAsJsonPrimitive("targetProjectArea");
         JsonArray workItemJson = workItemData.getAsJsonArray("workItems");
-        JsonArray attributesJson = workItemData.getAsJsonArray("attributeDefinitions");
+        JsonArray attributesJson = workItemData.getAsJsonArray("mapping");
 
+        if(previewPrimitive != null) {
+            previewOnly = previewPrimitive.getAsBoolean();
+        }
         // map cient data to model
         Collection<Integer> clientWorkItemList = gson.fromJson(workItemJson, workItemIdCollectionType);
         Collection<AttributeDefinition> clientMappingDefinitions = gson.fromJson(attributesJson, attributesCollectionType);
@@ -72,9 +77,11 @@ public class MoveService extends AbstractRestService {
 			// store attribute based ovservations to be able to return this information to the end user
 			moveResults = preparationResult.getAttributeDefinitions().getAttributeDefinitionCollection();
 
-			// try to move the work items...
-			IStatus status = mover.MoveAll(preparationResult.getWorkItems());
-			isMoved = status.isOK();
+			if(!previewOnly) {
+                // try to move the work items...
+                IStatus status = mover.MoveAll(preparationResult.getWorkItems());
+                isMoved = status.isOK();
+            }
 		} catch (Exception e) {
             // Inform the user the the items could not be moved
             responseJson.addProperty("error", e.getMessage());
