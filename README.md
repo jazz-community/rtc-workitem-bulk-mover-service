@@ -39,11 +39,17 @@ This will start the core Bulk Mover operation.
 
 > POST /move
 
-*Request / Response* (they both look the same)
+*Request / Response* 
 ```
 {
-   "error":"some error message returned by the server",
+   // REQUEST only
+   "previewOnly":false, // true if you want to preview the changes, but do not move yet. Setting to false or providing no value will move if possible
+   "targetProjectArea":"My Target", // Display name of the target project area
+   "workItems":[153,156,199], // the list of work item IDs that will be moved
+   // RESPONSE only
+   "error":"some error message returned by the server", 
    "successful":false, // Indicates whether move was successful
+   // REQUEST and RESPONSE
    "mapping":[ // mapping definition for teh user to fill out
       {
          "identifier":"category", // internal attribute ID
