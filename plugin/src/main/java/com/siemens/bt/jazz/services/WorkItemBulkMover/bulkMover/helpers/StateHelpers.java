@@ -60,7 +60,7 @@ public final class StateHelpers {
             Identifier<IState> stateId = identifiers[n2];
             String id = stateId.getStringIdentifier();
             String name = workFlowInfo.getStateName(stateId);
-            values.add(new AttributeValue(id, name + "(" + id + ")"));
+            values.add(new AttributeValue(id, name));
             ++n2;
         }
         return values;
