@@ -22,24 +22,21 @@ public final class WorkItemTypeHelpers {
         return new AttributeValue(id, displayName);
     }
 
-    public static final void setWorkItemType(IWorkItem workItem, String odlWorkItemTypeId, String newWorkItemTypeId,
+    public static final void setWorkItemType(IWorkItem sourceWorkItem, IWorkItem targetWorkItem, String odlWorkItemTypeId, String newWorkItemTypeId,
                                  IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
-        IProjectAreaHandle pa = workItem.getProjectArea();
-        IWorkItemType oldType = workItemServer.findWorkItemType(pa, odlWorkItemTypeId, monitor);
-        IWorkItemType newType = workItemServer.findWorkItemType(pa, newWorkItemTypeId, monitor);
+        IProjectAreaHandle sourcePa = sourceWorkItem.getProjectArea();
+        IProjectAreaHandle targetPa = targetWorkItem.getProjectArea();
+        IWorkItemType oldType = workItemServer.findWorkItemType(sourcePa, odlWorkItemTypeId, monitor);
+        IWorkItemType newType = workItemServer.findWorkItemType(targetPa, newWorkItemTypeId, monitor);
         if(newType != null) {
-            workItemServer.updateWorkItemType(workItem, newType, oldType, monitor);
+            workItemServer.updateWorkItemType(targetWorkItem, newType, oldType, monitor);
         }
     }
 
     public static final List<AttributeValue> addWorkItemTypesAsValues(IProjectAreaHandle pa,
                                                          IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         List<AttributeValue> values = new ArrayList<AttributeValue>();
-        List<IWorkItemType> workItemTypes = workItemServer.findCachedWorkItemTypes(pa);
-        if (workItemTypes == null) {
-            workItemTypes = workItemServer.findWorkItemTypes(pa, monitor);
-        }
-        for (IWorkItemType type : workItemTypes) {
+        for (IWorkItemType type : getWorkItemTypes(pa, workItemServer, monitor)) {
             String name = type.getDisplayName();
             String id = type.getIdentifier();
             values.add(new AttributeValue(id, name));
@@ -47,4 +44,27 @@ public final class WorkItemTypeHelpers {
         return values;
     }
 
+    public static final boolean validateWorkItemTypes(List<IWorkItem> workItems, IProjectAreaHandle pa,
+                                                      IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
+        List<String> typeIds = new ArrayList<String>();
+        List<IWorkItemType> types = getWorkItemTypes(pa, workItemServer, monitor);
+        for(IWorkItemType type : types) {
+            typeIds.add(type.getIdentifier());
+        }
+        for(IWorkItem item : workItems) {
+            String type = item.getWorkItemType();
+            if(!typeIds.contains(type)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static final List<IWorkItemType> getWorkItemTypes(IProjectAreaHandle pa, IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
+        List<IWorkItemType> workItemTypes = workItemServer.findCachedWorkItemTypes(pa);
+        if (workItemTypes == null) {
+            workItemTypes = workItemServer.findWorkItemTypes(pa, monitor);
+        }
+        return workItemTypes;
+    }
 }

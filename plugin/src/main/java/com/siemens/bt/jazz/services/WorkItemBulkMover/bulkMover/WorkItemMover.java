@@ -72,7 +72,7 @@ public class WorkItemMover {
     /**
      * Prepare all work items for being moved
      * @param sourceWorkItems the list of work items to be moved
-     * @param targetPA the target project area for all those work items
+     * @param targetArea the target project area for all those work items
      * @param mappingDefinitions the mapping definition provided by the user
      * @return work items and attribute definitions
      * @throws UnsupportedEncodingException
@@ -80,10 +80,7 @@ public class WorkItemMover {
      * @throws URISyntaxException
      */
 	@SuppressWarnings("restriction")
-	public MovePreparationResult PrepareMove(List<IWorkItem> sourceWorkItems, String targetPA, Collection<AttributeDefinition> mappingDefinitions) throws UnsupportedEncodingException, TeamRepositoryException, URISyntaxException {
-	    // resolve project area
-		IProjectAreaHandle targetArea = ProjectAreaHelpers.getProjectArea(targetPA, service);
-
+	public MovePreparationResult PrepareMove(List<IWorkItem> sourceWorkItems, IProjectAreaHandle targetArea, Collection<AttributeDefinition> mappingDefinitions) throws UnsupportedEncodingException, TeamRepositoryException, URISyntaxException {
 		// run the bulk movement operation
 		BulkMoveOperation oper = new BulkMoveOperation(targetArea, service);
 		oper.run(sourceWorkItems, workItemServer, monitor);
@@ -202,7 +199,7 @@ public class WorkItemMover {
 						if(targetWorkItem.hasAttribute(targetAttr)) {
 							Object targetValue = targetAttr.getValue(auditSrv, targetWorkItem, monitor);
 							if(targetAttr.getIdentifier().equals(sourceAttr.getIdentifier())
-									&& !areValuesEqual(sourceValue, targetValue)
+									&& (!areValuesEqual(sourceValue, targetValue) || specialTreatmentRequired(targetAttr.getIdentifier()))
 									&& !AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier())) {
 								if(!attributeDefinitions.contains(sourceAttr.getIdentifier())) {
 									AttributeDefinition definition = new AttributeDefinition(targetAttr.getIdentifier(), targetAttr.getDisplayName());
@@ -227,6 +224,10 @@ public class WorkItemMover {
 			}
 
 		}
+	}
+
+	private boolean specialTreatmentRequired(String attributeId) {
+		return attributeId.equals(IWorkItem.TYPE_PROPERTY);
 	}
 
 	private boolean areValuesEqual(Object sourceValue, Object targetValue) {

@@ -57,7 +57,7 @@ public final class AttributeHelpers {
 
         if(valueId != null) {
             if (WorkItemAttributes.TYPE.equals(identifier)) {
-                WorkItemTypeHelpers.setWorkItemType(targetWorkItem, sourceWorkItem.getWorkItemType(), valueId, workItemServer, monitor);
+                WorkItemTypeHelpers.setWorkItemType(sourceWorkItem, targetWorkItem, sourceWorkItem.getWorkItemType(), valueId, workItemServer, monitor);
             } else if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
                 ResolutionHelpers.setResolution(targetWorkItem, valueId, workItemServer, monitor);
             } else if (WorkItemAttributes.STATE.equals(identifier)) {

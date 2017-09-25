@@ -10,7 +10,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.*;
+import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.workitem.service.IWorkItemServer;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.WorkItemTypeHelpers;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.ProjectAreaHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.WorkItemHelpers;
 import com.siemens.bt.jazz.services.base.rest.RestRequest;
 import org.apache.commons.logging.Log;
@@ -71,16 +74,24 @@ public class MoveService extends AbstractRestService {
             // fetch full work item information
 			List<IWorkItem> items = WorkItemHelpers.fetchWorkItems(clientWorkItemList, workItemServer, monitor);
 
-			// prepare movement and track fields to be changed
-			MovePreparationResult preparationResult = mover.PrepareMove(items, targetPA.getAsString(), clientMappingDefinitions);
+            // resolve project area
+            IProjectAreaHandle targetArea = ProjectAreaHelpers.getProjectArea(targetPA.getAsString(), parentService);
+
+            // prepare movement and track fields to be changed
+			MovePreparationResult preparationResult = mover.PrepareMove(items, targetArea, clientMappingDefinitions);
 
 			// store attribute based ovservations to be able to return this information to the end user
 			moveResults = preparationResult.getAttributeDefinitions().getAttributeDefinitionCollection();
 
-			if(!previewOnly) {
+			// post validate work item type to prevent inconsistent mapping
+            boolean typesValid = WorkItemTypeHelpers.validateWorkItemTypes(preparationResult.getWorkItems(), targetArea, workItemServer, null);
+
+			if(!previewOnly && typesValid) {
                 // try to move the work items...
                 IStatus status = mover.MoveAll(preparationResult.getWorkItems());
                 isMoved = status.isOK();
+            } else if (!typesValid) {
+                responseJson.addProperty("error", "Invalid target work item type. Make sure that you have set all requested type mappings");
             }
 		} catch (Exception e) {
             // Inform the user the the items could not be moved
