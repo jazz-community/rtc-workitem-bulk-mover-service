@@ -19,6 +19,6 @@ public final class ProjectAreaHelpers {
         String projectAreaURI = java.net.URLEncoder.encode(projectAreaName, "UTF-8");
         projectAreaURI = projectAreaURI.replace("+", "%20");
         IProcessArea processArea = processServerService.findProcessArea(new java.net.URI(projectAreaURI).toString(), null);
-        return processArea.getProjectArea();
+        return processArea != null ? processArea.getProjectArea() : null;
     }
 }
