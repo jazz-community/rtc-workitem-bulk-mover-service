@@ -93,8 +93,9 @@ This will start the core Bulk Mover operation.
 - States: State mapping is currently not possible.
 
 ## Contributing
-Please use the [Issue Tracker](https://github.com/jazz-community/rtc-workitem-bulk-mover-service/issues) of this repository to report issues or suggest enhancements.<br>
-Pull requests are very welcome.
+Please use the [Issue Tracker](https://github.com/jazz-community/rtc-absence-widget/issues) of this repository to report issues or suggest enhancements.
+
+For general contribution guidelines, please refer to [CONTRIBUTING.md](https://github.com/jazz-community/rtc-workitem-bulk-mover-service/blob/master/CONTRIBUTING.md)
 
 ## Licensing
 Copyright (c) Siemens AG. All rights reserved.<br>
