@@ -13,7 +13,7 @@ This section contains the API definition for this project. While we try to do ou
 ### base path
 You'll see the term `<root>` within the following API doc a few times. It represents the root (or base) path for this service. Assuming that your CCM server is being referred to as `localhost:7443/ccm`, the `<root>` path for this service is the following:
 
-> https://localhost:7443/ccm/service/com.siemens.bt.jazz.services.WorkItemBulkMover.IWorkItemBulkMoverService
+> https://localhost:7443/jazz/service/com.siemens.bt.jazz.services.WorkItemBulkMover.IWorkItemBulkMoverService
 
 ### get project area
 List all available project areas.

@@ -4,6 +4,7 @@ import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.repository.common.TeamRepositoryException;
 import com.ibm.team.workitem.common.model.IState;
 import com.ibm.team.workitem.common.model.IWorkItem;
+import com.ibm.team.workitem.common.model.IWorkItemType;
 import com.ibm.team.workitem.common.model.Identifier;
 import com.ibm.team.workitem.common.workflow.ICombinedWorkflowInfos;
 import com.ibm.team.workitem.common.workflow.IWorkflowInfo;
@@ -19,12 +20,13 @@ public final class StateHelpers {
     public static final AttributeValue getState(Object stateObj, IWorkItem workItem,
                                     IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         String stateId = (String)stateObj;
+        IWorkItemType type = workItemServer.findWorkItemType(workItem.getProjectArea(), workItem.getWorkItemType(), monitor);
         IWorkflowInfo iwfl = workItemServer.findWorkflowInfo(workItem, monitor);
         Identifier<IState>[] allWorkflowStates = iwfl.getAllStateIds();
         for(Identifier<IState> state : allWorkflowStates) {
             String id = state.getStringIdentifier();
             if(id.equals(stateId)) {
-                String name = iwfl.getStateName(state);
+                String name = iwfl.getStateName(state) + " (" + type.getDisplayName() + ")";
                 return new AttributeValue(id, name);
             }
         }
@@ -48,6 +50,7 @@ public final class StateHelpers {
     public static final List<AttributeValue> addStatesAsValues(IProjectAreaHandle pa, IWorkItem wi,
                                                    IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         List<AttributeValue> values = new ArrayList<AttributeValue>();
+        IWorkItemType type = workItemServer.findWorkItemType(pa, wi.getWorkItemType(), monitor);
         IWorkflowInfo workFlowInfo = workItemServer.findCachedWorkflowInfo(wi);
         if (workFlowInfo == null) {
             workFlowInfo = workItemServer.findWorkflowInfo(wi, monitor);
@@ -59,7 +62,7 @@ public final class StateHelpers {
         while (n2 < n) {
             Identifier<IState> stateId = identifiers[n2];
             String id = stateId.getStringIdentifier();
-            String name = workFlowInfo.getStateName(stateId);
+            String name = workFlowInfo.getStateName(stateId) + " (" + type.getDisplayName() + ")";
             values.add(new AttributeValue(id, name));
             ++n2;
         }

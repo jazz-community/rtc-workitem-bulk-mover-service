@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class ProjectAreaService extends AbstractRestService {
 
@@ -34,12 +35,12 @@ public class ProjectAreaService extends AbstractRestService {
             IContributorHandle contribHandle = processServerService.getAuthenticatedContributor();
             IRepositoryItemService itemService = parentService.getService(IRepositoryItemService.class);
             IContributor contributor = (IContributor) itemService.fetchItem(contribHandle, null);
-            Map<String, ProjectArea> projectAreas = new HashMap<String, ProjectArea>();
+            Map<String, ProjectArea> projectAreas = new TreeMap<String, ProjectArea>();
             IProcessArea[] areas = processServerService.findProcessAreas(contributor, null, null);
             for(IProcessArea a : areas) {
                 IProjectArea pa = (IProjectArea) itemService.fetchItem(a.getProjectArea(), null);
                 String paId = pa.getItemId().toString();
-                projectAreas.put(paId, new ProjectArea(paId, pa.getName()));
+                projectAreas.put(pa.getName(), new ProjectArea(paId, pa.getName()));
             }
             String projectAreasJson = googleJson.toJson(projectAreas);
             response.getWriter().write(projectAreasJson);
