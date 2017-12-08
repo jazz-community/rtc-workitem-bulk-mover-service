@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +15,7 @@ import com.google.gson.*;
 import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.workitem.service.IWorkItemServer;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.WorkItemTypeHelpers;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.TypeMappingEntry;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.ProjectAreaHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.WorkItemHelpers;
 import com.siemens.bt.jazz.services.base.rest.RestRequest;
@@ -37,6 +40,7 @@ public class MoveService extends AbstractRestService {
     Gson gson;
     Type workItemIdCollectionType;
     Type attributesCollectionType;
+    Type typeMappingCollectionType;
     Type resultsType;
 
     public MoveService(Log log, HttpServletRequest request, HttpServletResponse response, RestRequest restRequest, TeamRawService parentService) {
@@ -46,6 +50,7 @@ public class MoveService extends AbstractRestService {
         this.gson = new Gson();
         this.workItemIdCollectionType = new TypeToken<Collection<Integer>>(){}.getType();
         this.attributesCollectionType = new TypeToken<Collection<AttributeDefinition>>(){}.getType();
+        this.typeMappingCollectionType = new TypeToken<Collection<TypeMappingEntry>>(){}.getType();
         this.resultsType = new TypeToken<Collection<AttributeDefinition>>() {}.getType();
     }
 	
@@ -61,6 +66,7 @@ public class MoveService extends AbstractRestService {
         JsonPrimitive previewPrimitive = workItemData.getAsJsonPrimitive("previewOnly");
         JsonPrimitive targetPA = workItemData.getAsJsonPrimitive("targetProjectArea");
         JsonArray workItemJson = workItemData.getAsJsonArray("workItems");
+        JsonArray typeMappingJson = workItemData.getAsJsonArray("typeMapping");
         JsonArray attributesJson = workItemData.getAsJsonArray("mapping");
 
         if(previewPrimitive != null) {
@@ -69,6 +75,11 @@ public class MoveService extends AbstractRestService {
         // map cient data to model
         Collection<Integer> clientWorkItemList = gson.fromJson(workItemJson, workItemIdCollectionType);
         Collection<AttributeDefinition> clientMappingDefinitions = gson.fromJson(attributesJson, attributesCollectionType);
+        Collection<TypeMappingEntry> typeMappingDefinitions = gson.fromJson(typeMappingJson, typeMappingCollectionType);
+        Map<String, String> typeMap = new HashMap<String, String>();
+        for (TypeMappingEntry def : typeMappingDefinitions) {
+            typeMap.put(def.getSource(), def.getTarget());
+        }
 
         try {
             // fetch full work item information
@@ -78,24 +89,19 @@ public class MoveService extends AbstractRestService {
             IProjectAreaHandle targetArea = ProjectAreaHelpers.getProjectArea(targetPA.getAsString(), parentService);
 
             // prepare movement and track fields to be changed
-			MovePreparationResult preparationResult = mover.PrepareMove(items, targetArea, clientMappingDefinitions);
+			MovePreparationResult preparationResult = mover.PrepareMove(items, targetArea, clientMappingDefinitions, typeMap);
 
 			// store attribute based ovservations to be able to return this information to the end user
 			moveResults = preparationResult.getAttributeDefinitions().getAttributeDefinitionCollection();
 
-			// post validate work item type to prevent inconsistent mapping
-            boolean typesValid = WorkItemTypeHelpers.validateWorkItemTypes(preparationResult.getWorkItems(), targetArea, workItemServer, null);
-
-			if(!previewOnly && typesValid) {
+			if(!previewOnly) {
                 // try to move the work items...
                 IStatus status = mover.MoveAll(preparationResult.getWorkItems());
                 isMoved = status.isOK();
-            } else if (!typesValid) {
-                responseJson.addProperty("error", "Invalid target work item type. Make sure that you have set all requested type mappings");
             }
 		} catch (Exception e) {
             // Inform the user the the items could not be moved
-            responseJson.addProperty("error", e.getMessage());
+            responseJson.addProperty("error", e.getMessage() + e.getStackTrace());
 		}
 
         // prepare data to be returend

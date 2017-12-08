@@ -10,36 +10,18 @@ import java.util.List;
 public class AttributeDefinition {
 	private String identifier;
 	private String displayName;
-	private List<AttributeValue> allowedValues;
 	private List<MappingDefinition> valueMappings;
 	
 	public AttributeDefinition(String id, String name) {
 		this.identifier = id;
 		this.displayName = name;
-		allowedValues = new ArrayList<AttributeValue>();
 		valueMappings = new ArrayList<MappingDefinition>();
 	}
 	
 	public String getIdentifier() {
 		return identifier;
 	}
-	
-//	public String getDisplayName() {
-//		return displayName;
-//	}
-	
-	public List<AttributeValue> getAttributeValues() {
-		return allowedValues;
-	}
-//
-//	public void addAllowedValue(AttributeValue attrVal) {
-//		allowedValues.add(attrVal);
-//	}
 
-	public void addAllowedValues(List<AttributeValue> attrVals) {
-		allowedValues.addAll(attrVals);
-	}
-	
 	public List<MappingDefinition> getMappingDefinitions() {
 		return valueMappings;
 	}
@@ -56,10 +38,6 @@ public class AttributeDefinition {
 		}
 		return null;
 	}
-
-//	public void addValueMappings(List<MappingDefinition> mappingDefinitions) {
-//		valueMappings.addAll(mappingDefinitions);
-//	}
 
     /**
      * override equals to compare by unique attribute identifier

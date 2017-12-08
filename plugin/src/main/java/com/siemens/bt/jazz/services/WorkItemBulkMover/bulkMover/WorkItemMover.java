@@ -80,7 +80,7 @@ public class WorkItemMover {
      * @throws URISyntaxException
      */
 	@SuppressWarnings("restriction")
-	public MovePreparationResult PrepareMove(List<IWorkItem> sourceWorkItems, IProjectAreaHandle targetArea, Collection<AttributeDefinition> mappingDefinitions) throws UnsupportedEncodingException, TeamRepositoryException, URISyntaxException {
+	public MovePreparationResult PrepareMove(List<IWorkItem> sourceWorkItems, IProjectAreaHandle targetArea, Collection<AttributeDefinition> mappingDefinitions, Map<String, String> typeMap) throws UnsupportedEncodingException, TeamRepositoryException, URISyntaxException {
 		// run the bulk movement operation
 		BulkMoveOperation oper = new BulkMoveOperation(targetArea, service);
 		oper.run(sourceWorkItems, workItemServer, monitor);
@@ -90,6 +90,14 @@ public class WorkItemMover {
 		if(workItems.size() == 0) {
 			throw new TeamRepositoryException("No work Items found to move. This likely happens if Source and Targer project area are the same");
 		}
+
+		// update work item type according to client mapping
+		for(WorkItemMoveMapper entry : workItems) {
+			String sourceType = entry.getSourceWorkItem().getWorkItemType();
+			String targetType = typeMap.get(sourceType);
+			WorkItemTypeHelpers.setWorkItemType(entry.getSourceWorkItem(), entry.getTargetWorkItem(), sourceType, targetType, workItemServer, monitor);
+		}
+
 		if(mappingDefinitions != null && mappingDefinitions.size() > 0) {
 			// if the user has sent mappings for specific attributes, apply them now
 			applyMappingsToWorkItems(workItems, mappingDefinitions);
@@ -203,7 +211,6 @@ public class WorkItemMover {
 									&& !AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier())) {
 								if(!attributeDefinitions.contains(sourceAttr.getIdentifier())) {
 									AttributeDefinition definition = new AttributeDefinition(targetAttr.getIdentifier(), targetAttr.getDisplayName());
-									definition.addAllowedValues(attributeHelpers.getAvailableOptionsPresentations(targetAttr, targetWorkItem));
 									attributeDefinitions.add(definition);
 								}
 								AttributeDefinition definition = attributeDefinitions.get(sourceAttr.getIdentifier());
@@ -212,8 +219,11 @@ public class WorkItemMover {
 								WorkItem wi = new WorkItem(sourceWorkItem.getId(), sourceWorkItem.getHTMLSummary().getPlainText(), null);
 								boolean isRequired = requiredAttributes.contains(targetAttr.getIdentifier());
 								if(mapping == null) {
-									definition.addValueMapping(new MappingDefinition(
-											oldAttributeValue, new AffectedWorkItem(wi, isRequired)));
+									MappingDefinition def = new MappingDefinition(
+											oldAttributeValue, new AffectedWorkItem(wi, isRequired));
+									definition.addValueMapping(def);
+									List<AttributeValue> val = attributeHelpers.getAvailableOptionsPresentations(targetAttr, targetWorkItem);
+									def.addAllowedValues(val);
 								} else {
 									mapping.addAffectedWorkItem(wi, isRequired);
 								}
@@ -222,7 +232,6 @@ public class WorkItemMover {
 					}
 				}
 			}
-
 		}
 	}
 

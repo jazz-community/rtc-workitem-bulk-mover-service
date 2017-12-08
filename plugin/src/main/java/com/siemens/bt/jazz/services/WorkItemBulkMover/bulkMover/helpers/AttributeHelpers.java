@@ -43,6 +43,8 @@ public final class AttributeHelpers {
             IWorkItem.COMMENTS_PROPERTY,
             // custom attributes are not moveable if they do not exist in the target area
             IWorkItem.CUSTOM_ATTRIBUTES_PROPERTY,
+            // type is already processed before
+            IWorkItem.TYPE_PROPERTY,
             // the following attributes are automatically tracked by the server itself
             IWorkItem.CONTEXT_ID_PROPERTY,
             IItem.ITEM_ID_PROPERTY,
@@ -56,9 +58,7 @@ public final class AttributeHelpers {
         Identifier<IAttribute> identifier = WorkItemAttributes.getPropertyIdentifier(attribute.getIdentifier());
 
         if(valueId != null) {
-            if (WorkItemAttributes.TYPE.equals(identifier)) {
-                WorkItemTypeHelpers.setWorkItemType(sourceWorkItem, targetWorkItem, sourceWorkItem.getWorkItemType(), valueId, workItemServer, monitor);
-            } else if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
+            if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
                 ResolutionHelpers.setResolution(targetWorkItem, valueId, workItemServer, monitor);
             } else if (WorkItemAttributes.STATE.equals(identifier)) {
                 StateHelpers.setState(targetWorkItem, valueId, workItemServer, monitor);
@@ -84,9 +84,7 @@ public final class AttributeHelpers {
         AttributeValue value = new AttributeValue("", "");;
 
         if(attributeValue != null) {
-            if (WorkItemAttributes.TYPE.equals(identifier)) {
-                value = WorkItemTypeHelpers.getWorkItemType(attributeValue, pa, workItemServer, monitor);
-            } else if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
+            if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
                 value = ResolutionHelpers.getResolution(attributeValue, workItem, workItemServer, monitor);
             } else if (WorkItemAttributes.STATE.equals(identifier)) {
                 value = StateHelpers.getState(attributeValue, workItem, workItemServer, monitor);
@@ -109,9 +107,7 @@ public final class AttributeHelpers {
         List<AttributeValue> values;
         Identifier<IAttribute> identifier = WorkItemAttributes.getPropertyIdentifier(attribute.getIdentifier());
 
-        if (WorkItemAttributes.TYPE.equals(identifier)) {
-            values = WorkItemTypeHelpers.addWorkItemTypesAsValues(pa, workItemServer, monitor);
-        } else if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
+        if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
             values = ResolutionHelpers.addResolutionsAsValues(pa, workItemServer, monitor);
         } else if (WorkItemAttributes.STATE.equals(identifier)) {
             values = StateHelpers.addStatesAsValues(pa, workItem, workItemServer, monitor);

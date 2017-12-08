@@ -8,19 +8,28 @@ import java.util.List;
 public class MappingDefinition {
 	private AttributeValue oldValue;
 	private List<AffectedWorkItem> affectedWorkItems;
+    private List<AttributeValue> allowedValues;
     private String chosen;
 	private boolean showDetails = false;
 
 	public MappingDefinition(AttributeValue oldValue, AffectedWorkItem affectedWorkItem) {
 	    this.oldValue = oldValue;
-	    this.affectedWorkItems = new ArrayList<AffectedWorkItem>();
+        allowedValues = new ArrayList<AttributeValue>();
+        this.affectedWorkItems = new ArrayList<AffectedWorkItem>();
 	    this.affectedWorkItems.add(affectedWorkItem);
         this.chosen = "nothing";
     }
 
     public void addAffectedWorkItem(WorkItem wi, boolean isRequired) {
-
 	    this.affectedWorkItems.add(new AffectedWorkItem(wi, isRequired));
+    }
+
+    public List<AttributeValue> getAttributeValues() {
+        return allowedValues;
+    }
+
+    public void addAllowedValues(List<AttributeValue> attrVals) {
+        allowedValues.addAll(attrVals);
     }
 
     public List<AffectedWorkItem> getAffectedWorkItems() {
