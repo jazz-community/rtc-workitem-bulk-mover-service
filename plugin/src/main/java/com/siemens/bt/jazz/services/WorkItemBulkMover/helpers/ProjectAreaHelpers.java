@@ -9,9 +9,6 @@ import com.ibm.team.repository.service.TeamRawService;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 
-/**
- * Created by z002t6hs on 17.05.2017.
- */
 public final class ProjectAreaHelpers {
 
     public static IProjectAreaHandle getProjectArea(String projectAreaName, TeamRawService service) throws UnsupportedEncodingException, TeamRepositoryException, URISyntaxException {

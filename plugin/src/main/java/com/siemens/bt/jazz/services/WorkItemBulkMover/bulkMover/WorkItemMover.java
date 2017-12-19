@@ -1,67 +1,36 @@
 package com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover;
 
+import com.ibm.team.process.common.IProjectArea;
+import com.ibm.team.process.common.IProjectAreaHandle;
+import com.ibm.team.repository.common.IAuditable;
+import com.ibm.team.repository.common.TeamRepositoryException;
+import com.ibm.team.repository.service.IRepositoryItemService;
+import com.ibm.team.repository.service.TeamRawService;
+import com.ibm.team.workitem.common.internal.IAdditionalSaveParameters;
+import com.ibm.team.workitem.common.model.IAttribute;
+import com.ibm.team.workitem.common.model.IWorkItem;
+import com.ibm.team.workitem.service.IAuditableServer;
+import com.ibm.team.workitem.service.IWorkItemServer;
+import com.ibm.team.workitem.service.IWorkItemWrapper;
+import com.ibm.team.workitem.service.internal.WorkItemWrapper;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.AttributeHelpers;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.WorkItemTypeHelpers;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.*;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.collections.AttributeDefinitions;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.operations.BulkMoveOperation;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.rtc.models.WorkItem;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.Map.Entry;
 
-import com.ibm.team.repository.common.IAuditable;
-import com.ibm.team.workitem.common.ISaveParameter;
-import com.ibm.team.workitem.common.internal.IAdditionalSaveParameters;
-import com.ibm.team.workitem.common.internal.SaveOperationParameter;
-import com.ibm.team.workitem.common.internal.SaveParameter;
-import com.ibm.team.workitem.common.internal.rcp.dto.impl.SaveParameterDTOImpl;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.AttributeHelpers;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.LiteralHelpers;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.WorkItemTypeHelpers;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.ProjectAreaHelpers;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.AffectedWorkItem;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.AttributeValue;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.MappingDefinition;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.MovePreparationResult;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.AttributeDefinition;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.WorkItemMoveMapper;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.collections.AttributeDefinitions;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.rtc.models.WorkItem;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.operations.BulkMoveOperation;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-
-import com.ibm.team.process.common.IDevelopmentLine;
-import com.ibm.team.process.common.IIteration;
-import com.ibm.team.process.common.IIterationHandle;
-import com.ibm.team.process.common.IProjectArea;
-import com.ibm.team.process.common.IProjectAreaHandle;
-import com.ibm.team.repository.common.IAuditableHandle;
-import com.ibm.team.repository.common.TeamRepositoryException;
-import com.ibm.team.repository.service.IRepositoryItemService;
-import com.ibm.team.repository.service.TeamRawService;
-import com.ibm.team.workitem.common.internal.model.WorkItemAttributes;
-import com.ibm.team.workitem.common.internal.util.IterationsHelper;
-import com.ibm.team.workitem.common.model.CategoryId;
-import com.ibm.team.workitem.common.model.IAttribute;
-import com.ibm.team.workitem.common.model.IAttributeHandle;
-import com.ibm.team.workitem.common.model.ICategory;
-import com.ibm.team.workitem.common.model.ICategoryHandle;
-import com.ibm.team.workitem.common.model.IEnumeration;
-import com.ibm.team.workitem.common.model.ILiteral;
-import com.ibm.team.workitem.common.model.IResolution;
-import com.ibm.team.workitem.common.model.IState;
-import com.ibm.team.workitem.common.model.IWorkItem;
-import com.ibm.team.workitem.common.model.IWorkItemType;
-import com.ibm.team.workitem.common.model.Identifier;
-import com.ibm.team.workitem.common.model.ItemProfile;
-import com.ibm.team.workitem.common.workflow.ICombinedWorkflowInfos;
-import com.ibm.team.workitem.common.workflow.IWorkflowInfo;
-import com.ibm.team.workitem.service.IAuditableServer;
-import com.ibm.team.workitem.service.IWorkItemServer;
-import com.ibm.team.workitem.service.IWorkItemWrapper;
-import com.ibm.team.workitem.service.internal.WorkItemWrapper;
-
 public class WorkItemMover {
-	TeamRawService service;
-	IWorkItemServer workItemServer;
-	IProgressMonitor monitor;
+	private TeamRawService service;
+	private IWorkItemServer workItemServer;
+	private IProgressMonitor monitor;
 	
 	public WorkItemMover(TeamRawService parentService) {
 		service = parentService;
@@ -128,7 +97,7 @@ public class WorkItemMover {
 
 			if(attributes != null) {
 				for(Entry<String, String> attribute : attributes.entrySet()) {
-                    attributeHelpers.setAttributeForWorkItem(sourceWorkItem, targetWorkItem, attribute.getKey(), attribute.getValue());
+                    attributeHelpers.setAttributeForWorkItem(targetWorkItem, attribute.getKey(), attribute.getValue());
 				}
 			}
 		}
@@ -167,12 +136,6 @@ public class WorkItemMover {
 		return attributes;
 	}
 
-	/**
-	 *
-	 * @param mappedWorkItems
-	 * @return
-	 * @throws TeamRepositoryException
-	 */
 	private AttributeDefinitions analyzeWorkItems2(List<WorkItemMoveMapper> mappedWorkItems) throws TeamRepositoryException {
 		AttributeDefinitions attributeDefinitions = new AttributeDefinitions();
 
@@ -207,7 +170,7 @@ public class WorkItemMover {
 						if(targetWorkItem.hasAttribute(targetAttr)) {
 							Object targetValue = targetAttr.getValue(auditSrv, targetWorkItem, monitor);
 							if(targetAttr.getIdentifier().equals(sourceAttr.getIdentifier())
-									&& (!areValuesEqual(sourceValue, targetValue) || specialTreatmentRequired(targetAttr.getIdentifier()))
+									&& !areValuesEqual(sourceValue, targetValue)
 									&& !AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier())) {
 								if(!attributeDefinitions.contains(sourceAttr.getIdentifier())) {
 									AttributeDefinition definition = new AttributeDefinition(targetAttr.getIdentifier(), targetAttr.getDisplayName());
@@ -235,10 +198,6 @@ public class WorkItemMover {
 		}
 	}
 
-	private boolean specialTreatmentRequired(String attributeId) {
-		return attributeId.equals(IWorkItem.TYPE_PROPERTY);
-	}
-
 	private boolean areValuesEqual(Object sourceValue, Object targetValue) {
 		return sourceValue == targetValue || (sourceValue != null && sourceValue.equals(targetValue));
 	}
@@ -251,7 +210,6 @@ public class WorkItemMover {
 		for(IWorkItem w : workItems) {
 			wrappedWorkItems.add(new WorkItemWrapper(w, null, null, saveParams, Collections.<IAuditable>emptySet()));
 		}
-		IStatus s = workItemServer.saveWorkItems(wrappedWorkItems);
-		return s;
+		return workItemServer.saveWorkItems(wrappedWorkItems);
 	}
 }

@@ -12,12 +12,7 @@ import java.util.List;
 
 public final class LiteralHelpers {
 
-    public static final boolean isValidLiteral(IAttribute attribute) {
-        return !AttributeTypes.isEnumerationAttributeType(attribute.getAttributeType())
-                && !AttributeTypes.isEnumerationListAttributeType(attribute.getAttributeType());
-    }
-
-    public static final AttributeValue getLiteral(IAttribute attribute, Object t_val,
+    static AttributeValue getLiteral(IAttribute attribute, Object t_val,
                                      IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         Identifier<? extends ILiteral> lit = (Identifier<? extends ILiteral>)t_val;
         IEnumeration<? extends ILiteral> enumeration = workItemServer.resolveEnumeration(attribute, monitor);
@@ -33,7 +28,7 @@ public final class LiteralHelpers {
     }
 
 
-    public static final void setLiteral(IWorkItem workItem, String attributeId, String literalId,
+    static void setLiteral(IWorkItem workItem, String attributeId, String literalId,
                            IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         IProjectAreaHandle projectArea = workItem.getProjectArea();
         IAttribute attribute = workItemServer.findAttribute(projectArea, attributeId, monitor);
@@ -48,7 +43,7 @@ public final class LiteralHelpers {
         }
     }
 
-    public static final List<AttributeValue> addLiteralsAsValues(IAttribute attribute,
+    static List<AttributeValue> addLiteralsAsValues(IAttribute attribute,
                                                     IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         List<AttributeValue> values = new ArrayList<AttributeValue>();
         IEnumeration<? extends ILiteral> enumeration = workItemServer.resolveEnumeration(attribute, monitor);

@@ -14,9 +14,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ResolutionHelpers {
+final class ResolutionHelpers {
 
-    public static final AttributeValue getResolution(Object resolutionObj, IWorkItem workItem,
+    static AttributeValue getResolution(Object resolutionObj, IWorkItem workItem,
                                         IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         String stateId = (String)resolutionObj;
         IWorkflowInfo iwfl = workItemServer.findWorkflowInfo(workItem, monitor);
@@ -31,7 +31,7 @@ public final class ResolutionHelpers {
         return new AttributeValue("", "");
     }
 
-    public static final void setResolution(IWorkItem workItem, String resolutionId,
+    static void setResolution(IWorkItem workItem, String resolutionId,
                               IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         IProjectAreaHandle pa = workItem.getProjectArea();
         ICombinedWorkflowInfos workFlowInfo = workItemServer.findCachedCombinedWorkflowInfos(pa);
@@ -47,7 +47,7 @@ public final class ResolutionHelpers {
         }
     }
 
-    public static final List<AttributeValue> addResolutionsAsValues(IProjectAreaHandle pa,
+    static List<AttributeValue> addResolutionsAsValues(IProjectAreaHandle pa,
                                                        IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         List<AttributeValue> values = new ArrayList<AttributeValue>();
         ICombinedWorkflowInfos workFlowInfo = workItemServer.findCachedCombinedWorkflowInfos(pa);

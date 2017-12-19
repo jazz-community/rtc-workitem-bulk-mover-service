@@ -12,11 +12,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by z002t6hs on 12.06.2017.
- */
-public final class FoundInHelpers {
-    public static final AttributeValue getFoundIn(Object targetValue, IWorkItemServer workItemServer, TeamRawService service, IProgressMonitor monitor) throws TeamRepositoryException {
+final class FoundInHelpers {
+    static AttributeValue getFoundIn(Object targetValue, IWorkItemServer workItemServer, TeamRawService service, IProgressMonitor monitor) throws TeamRepositoryException {
         IRepositoryItemService itemService = service.getService(IRepositoryItemService.class);
         IDeliverableHandle deliverableHandle = (IDeliverableHandle)targetValue;
         IDeliverable deliverable = (IDeliverable) itemService.fetchItem(deliverableHandle, null);
@@ -28,8 +25,8 @@ public final class FoundInHelpers {
         }
     }
 
-    public static final void setFoundIn(IWorkItem workItem, String targetValue,
-                                        IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
+    static void setFoundIn(IWorkItem workItem, String targetValue,
+                           IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         IAttribute foundInAttr = workItemServer.findAttribute(workItem.getProjectArea(), IWorkItem.FOUND_IN_PROPERTY, monitor);
         IDeliverable deliverable = workItemServer.findDeliverableByName(workItem.getProjectArea(), targetValue, IDeliverable.DEFAULT_PROFILE, monitor);
         if(deliverable != null) {
@@ -37,9 +34,7 @@ public final class FoundInHelpers {
         }
     }
 
-    public static final List<AttributeValue> addFoundInAsValues(IProjectAreaHandle pa, TeamRawService service,
-                                                                IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
-        IRepositoryItemService itemService = service.getService(IRepositoryItemService.class);
+    static List<AttributeValue> addFoundInAsValues(IProjectAreaHandle pa, IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         List<AttributeValue> values = new ArrayList<AttributeValue>();
         List<IDeliverable> deliverables = workItemServer.findDeliverablesByProjectArea(pa, false, IDeliverable.SMALL_PROFILE, monitor);
         if(!deliverables.isEmpty()) {
@@ -47,6 +42,6 @@ public final class FoundInHelpers {
                 values.add(new AttributeValue(deliverable.getName(), deliverable.getName()));
             }
         }
-        return  values;
+        return values;
     }
 }

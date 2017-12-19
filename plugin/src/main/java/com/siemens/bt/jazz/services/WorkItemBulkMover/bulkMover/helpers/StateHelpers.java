@@ -6,7 +6,6 @@ import com.ibm.team.workitem.common.model.IState;
 import com.ibm.team.workitem.common.model.IWorkItem;
 import com.ibm.team.workitem.common.model.IWorkItemType;
 import com.ibm.team.workitem.common.model.Identifier;
-import com.ibm.team.workitem.common.workflow.ICombinedWorkflowInfos;
 import com.ibm.team.workitem.common.workflow.IWorkflowInfo;
 import com.ibm.team.workitem.service.IWorkItemServer;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.AttributeValue;
@@ -15,10 +14,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class StateHelpers {
+final class StateHelpers {
 
-    public static final AttributeValue getState(Object stateObj, IWorkItem workItem,
-                                    IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
+    static AttributeValue getState(Object stateObj, IWorkItem workItem,
+                                   IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         String stateId = (String)stateObj;
         IWorkItemType type = workItemServer.findWorkItemType(workItem.getProjectArea(), workItem.getWorkItemType(), monitor);
         IWorkflowInfo iwfl = workItemServer.findWorkflowInfo(workItem, monitor);
@@ -33,9 +32,8 @@ public final class StateHelpers {
         return new AttributeValue("", "");
     }
 
-    public static final void setState(IWorkItem workItem, String stateId,
-                          IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
-        IProjectAreaHandle pa = workItem.getProjectArea();
+    static void setState(IWorkItem workItem, String stateId,
+                         IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         IWorkflowInfo iwfl = workItemServer.findWorkflowInfo(workItem, monitor);
         Identifier<IState>[] allWorkflowStates = iwfl.getAllStateIds();
         for(Identifier<IState> state : allWorkflowStates) {
@@ -47,8 +45,8 @@ public final class StateHelpers {
         //TODO this impl is no longer valid! Problem is that setState2 is deprecated
     }
 
-    public static final List<AttributeValue> addStatesAsValues(IProjectAreaHandle pa, IWorkItem wi,
-                                                   IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
+    static List<AttributeValue> addStatesAsValues(IProjectAreaHandle pa, IWorkItem wi,
+                                                  IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         List<AttributeValue> values = new ArrayList<AttributeValue>();
         IWorkItemType type = workItemServer.findWorkItemType(pa, wi.getWorkItemType(), monitor);
         IWorkflowInfo workFlowInfo = workItemServer.findCachedWorkflowInfo(wi);
@@ -68,5 +66,4 @@ public final class StateHelpers {
         }
         return values;
     }
-
 }

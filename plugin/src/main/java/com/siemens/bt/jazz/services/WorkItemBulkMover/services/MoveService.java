@@ -1,47 +1,44 @@
 package com.siemens.bt.jazz.services.WorkItemBulkMover.services;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.reflect.TypeToken;
 import com.ibm.team.process.common.IProjectAreaHandle;
+import com.ibm.team.repository.service.TeamRawService;
+import com.ibm.team.workitem.common.model.IWorkItem;
 import com.ibm.team.workitem.service.IWorkItemServer;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.WorkItemTypeHelpers;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.WorkItemMover;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.AttributeDefinition;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.MovePreparationResult;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.TypeMappingEntry;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.ProjectAreaHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.WorkItemHelpers;
+import com.siemens.bt.jazz.services.base.rest.AbstractRestService;
 import com.siemens.bt.jazz.services.base.rest.RestRequest;
+import com.siemens.bt.jazz.services.base.utils.RequestReader;
 import org.apache.commons.logging.Log;
 import org.apache.http.auth.AuthenticationException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-
-import com.google.gson.reflect.TypeToken;
-import com.ibm.team.repository.service.TeamRawService;
-import com.ibm.team.workitem.common.model.IWorkItem;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.AttributeDefinition;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.MovePreparationResult;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.WorkItemMover;
-import com.siemens.bt.jazz.services.base.rest.AbstractRestService;
-import com.siemens.bt.jazz.services.base.utils.RequestReader;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URISyntaxException;
+import java.util.*;
+
 public class MoveService extends AbstractRestService {
-    IWorkItemServer workItemServer;
-    IProgressMonitor monitor;
-    Gson gson;
-    Type workItemIdCollectionType;
-    Type attributesCollectionType;
-    Type typeMappingCollectionType;
-    Type resultsType;
+    private IWorkItemServer workItemServer;
+    private IProgressMonitor monitor;
+    private Gson gson;
+    private Type workItemIdCollectionType;
+    private Type attributesCollectionType;
+    private Type typeMappingCollectionType;
+    private Type resultsType;
 
     public MoveService(Log log, HttpServletRequest request, HttpServletResponse response, RestRequest restRequest, TeamRawService parentService) {
         super(log, request, response, restRequest, parentService);
@@ -101,7 +98,7 @@ public class MoveService extends AbstractRestService {
             }
 		} catch (Exception e) {
             // Inform the user the the items could not be moved
-            responseJson.addProperty("error", e.getMessage() + e.getStackTrace());
+            responseJson.addProperty("error", e.getMessage() + Arrays.toString(e.getStackTrace()));
 		}
 
         // prepare data to be returend

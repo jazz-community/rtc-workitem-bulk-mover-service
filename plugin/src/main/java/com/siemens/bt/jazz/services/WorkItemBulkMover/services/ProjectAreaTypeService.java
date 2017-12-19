@@ -20,12 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created by z002t6hs on 01.12.2017.
- */
 public class ProjectAreaTypeService extends AbstractRestService {
     public ProjectAreaTypeService(Log log, HttpServletRequest request, HttpServletResponse response, RestRequest restRequest, TeamRawService parentService) {
         super(log, request, response, restRequest, parentService);

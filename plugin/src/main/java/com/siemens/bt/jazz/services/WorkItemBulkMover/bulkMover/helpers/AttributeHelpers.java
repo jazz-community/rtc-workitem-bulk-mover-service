@@ -14,9 +14,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import java.util.*;
 
 public final class AttributeHelpers {
-    TeamRawService teamRawService;
-    IWorkItemServer workItemServer;
-    IProgressMonitor monitor;
+    private TeamRawService teamRawService;
+    private IWorkItemServer workItemServer;
+    private IProgressMonitor monitor;
 
     public AttributeHelpers(TeamRawService teamRawService, IWorkItemServer workItemServer, IProgressMonitor monitor) {
         this.teamRawService = teamRawService;
@@ -52,7 +52,7 @@ public final class AttributeHelpers {
     ));
 
     @SuppressWarnings("restriction")
-    public void setAttributeForWorkItem(IWorkItem sourceWorkItem, IWorkItem targetWorkItem, String attributeId, String valueId) throws TeamRepositoryException {
+    public void setAttributeForWorkItem(IWorkItem targetWorkItem, String attributeId, String valueId) throws TeamRepositoryException {
         IProjectAreaHandle paHandle = targetWorkItem.getProjectArea();
         IAttribute attribute = workItemServer.findAttribute(paHandle, attributeId, monitor);
         Identifier<IAttribute> identifier = WorkItemAttributes.getPropertyIdentifier(attribute.getIdentifier());
@@ -65,7 +65,7 @@ public final class AttributeHelpers {
             } else if (WorkItemAttributes.CATEGORY.equals(identifier)) {
                 CategoryHelpers.setCategory(targetWorkItem, valueId, workItemServer, monitor);
             } else if (WorkItemAttributes.TARGET.equals(identifier)) {
-                TargetHelpers.setTarget(targetWorkItem, valueId, workItemServer, monitor);
+                TargetHelpers.setTarget(targetWorkItem, valueId, workItemServer);
             } else if (WorkItemAttributes.VERSION.equals(identifier)) {
                 FoundInHelpers.setFoundIn(targetWorkItem, valueId, workItemServer, monitor);
             } else {
@@ -79,9 +79,8 @@ public final class AttributeHelpers {
     public AttributeValue getCurrentValueRepresentation(IAttribute attribute, IWorkItem workItem) throws TeamRepositoryException {
         IAuditableServer auditSrv = workItemServer.getAuditableServer();
         Object attributeValue = attribute.getValue(auditSrv, workItem, monitor);
-        IProjectAreaHandle pa = workItem.getProjectArea();
         Identifier<IAttribute> identifier = WorkItemAttributes.getPropertyIdentifier(attribute.getIdentifier());
-        AttributeValue value = new AttributeValue("", "");;
+        AttributeValue value = new AttributeValue("", "");
 
         if(attributeValue != null) {
             if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
@@ -91,7 +90,7 @@ public final class AttributeHelpers {
             } else if (WorkItemAttributes.CATEGORY.equals(identifier)) {
                 value = CategoryHelpers.getCategory(attributeValue, workItemServer, teamRawService, monitor);
             } else if (WorkItemAttributes.TARGET.equals(identifier)) {
-                value = TargetHelpers.getTarget(attributeValue, auditSrv, workItemServer, teamRawService, monitor);
+                value = TargetHelpers.getTarget(attributeValue, auditSrv, teamRawService, monitor);
             } else if (WorkItemAttributes.VERSION.equals(identifier)) {
                 value = FoundInHelpers.getFoundIn(attributeValue, workItemServer, teamRawService, monitor);
             } else {
@@ -116,7 +115,7 @@ public final class AttributeHelpers {
         } else if (WorkItemAttributes.TARGET.equals(identifier)) {
             values = TargetHelpers.addTargetsAsValues(pa, workItemServer, monitor);
         } else if (WorkItemAttributes.VERSION.equals(identifier)) {
-            values = FoundInHelpers.addFoundInAsValues(pa, teamRawService, workItemServer, monitor);
+            values = FoundInHelpers.addFoundInAsValues(pa, workItemServer, monitor);
         } else {
             values = LiteralHelpers.addLiteralsAsValues(attribute, workItemServer, monitor);
         }
