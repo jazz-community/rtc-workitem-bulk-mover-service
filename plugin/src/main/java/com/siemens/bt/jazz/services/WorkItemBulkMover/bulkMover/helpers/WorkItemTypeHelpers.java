@@ -19,6 +19,8 @@ public final class WorkItemTypeHelpers {
         IWorkItemType newType = workItemServer.findWorkItemType(targetPa, newWorkItemTypeId, monitor);
         if(newType != null) {
             workItemServer.updateWorkItemType(targetWorkItem, newType, oldType, monitor);
+        } else {
+            throw new TeamRepositoryException("Target work item of type '" + newWorkItemTypeId + "' does not exist");
         }
     }
 
