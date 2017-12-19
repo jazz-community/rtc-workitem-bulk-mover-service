@@ -145,7 +145,7 @@ public class WorkItemMover {
 			addWorkItemToAttributeDefinitions(attributeDefinitions, mappedWorkItem, itemService);
 		}
 
-		return  attributeDefinitions;
+		return attributeDefinitions;
 	}
 
 	private void addWorkItemToAttributeDefinitions(AttributeDefinitions attributeDefinitions, WorkItemMoveMapper mappedWorkItem, IRepositoryItemService itemService) throws TeamRepositoryException {
@@ -169,8 +169,10 @@ public class WorkItemMover {
 					for(IAttribute targetAttr : targetAttrs) {
 						if(targetWorkItem.hasAttribute(targetAttr)) {
 							Object targetValue = targetAttr.getValue(auditSrv, targetWorkItem, monitor);
+							boolean isRequired = requiredAttributes.contains(targetAttr.getIdentifier());
 							if(targetAttr.getIdentifier().equals(sourceAttr.getIdentifier())
-									&& !areValuesEqual(sourceValue, targetValue)
+									&& (areBothNullButRequired(isRequired, sourceValue, targetValue)
+											|| !areValuesEqual(sourceValue, targetValue))
 									&& !AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier())) {
 								if(!attributeDefinitions.contains(sourceAttr.getIdentifier())) {
 									AttributeDefinition definition = new AttributeDefinition(targetAttr.getIdentifier(), targetAttr.getDisplayName());
@@ -180,13 +182,14 @@ public class WorkItemMover {
 								AttributeValue oldAttributeValue = attributeHelpers.getCurrentValueRepresentation(sourceAttr, sourceWorkItem);
 								MappingDefinition mapping = definition.getMapping(oldAttributeValue.getIdentifier());
 								WorkItem wi = new WorkItem(sourceWorkItem.getId(), sourceWorkItem.getHTMLSummary().getPlainText(), null);
-								boolean isRequired = requiredAttributes.contains(targetAttr.getIdentifier());
 								if(mapping == null) {
-									MappingDefinition def = new MappingDefinition(
-											oldAttributeValue, new AffectedWorkItem(wi, isRequired));
-									definition.addValueMapping(def);
 									List<AttributeValue> val = attributeHelpers.getAvailableOptionsPresentations(targetAttr, targetWorkItem);
-									def.addAllowedValues(val);
+									if(val != null) {
+										MappingDefinition def = new MappingDefinition(
+												oldAttributeValue, new AffectedWorkItem(wi, isRequired));
+										definition.addValueMapping(def);
+										def.addAllowedValues(val);
+									}
 								} else {
 									mapping.addAffectedWorkItem(wi, isRequired);
 								}
@@ -196,6 +199,10 @@ public class WorkItemMover {
 				}
 			}
 		}
+	}
+
+	private boolean areBothNullButRequired(boolean isReuqired, Object sourceValue, Object targetValue) {
+		return sourceValue == null && targetValue == null && isReuqired;
 	}
 
 	private boolean areValuesEqual(Object sourceValue, Object targetValue) {

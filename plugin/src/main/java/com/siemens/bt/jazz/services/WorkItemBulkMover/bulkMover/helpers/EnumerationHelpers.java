@@ -10,10 +10,15 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class LiteralHelpers {
+public final class EnumerationHelpers {
 
-    static AttributeValue getLiteral(IAttribute attribute, Object t_val,
-                                     IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
+    public static final boolean isValidEnumerationLiteral(IAttribute attribute) {
+        return AttributeTypes.isEnumerationAttributeType(attribute.getAttributeType())
+        || AttributeTypes.isEnumerationListAttributeType(attribute.getAttributeType());
+    }
+
+    static AttributeValue getEnumerationLiteral(IAttribute attribute, Object t_val,
+                                                IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         Identifier<? extends ILiteral> lit = (Identifier<? extends ILiteral>)t_val;
         IEnumeration<? extends ILiteral> enumeration = workItemServer.resolveEnumeration(attribute, monitor);
         List<? extends ILiteral> list = enumeration.getEnumerationLiterals(false);
@@ -28,8 +33,8 @@ public final class LiteralHelpers {
     }
 
 
-    static void setLiteral(IWorkItem workItem, String attributeId, String literalId,
-                           IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
+    static void setEnumerationLiteral(IWorkItem workItem, String attributeId, String literalId,
+                                      IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         IProjectAreaHandle projectArea = workItem.getProjectArea();
         IAttribute attribute = workItemServer.findAttribute(projectArea, attributeId, monitor);
         IEnumeration<? extends ILiteral> enumeration = workItemServer.resolveEnumeration(attribute, monitor);
@@ -43,8 +48,8 @@ public final class LiteralHelpers {
         }
     }
 
-    static List<AttributeValue> addLiteralsAsValues(IAttribute attribute,
-                                                    IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
+    static List<AttributeValue> addEnumerationLiteralsAsValues(IAttribute attribute,
+                                                               IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         List<AttributeValue> values = new ArrayList<AttributeValue>();
         IEnumeration<? extends ILiteral> enumeration = workItemServer.resolveEnumeration(attribute, monitor);
         List<? extends ILiteral> list = enumeration.getEnumerationLiterals(false);

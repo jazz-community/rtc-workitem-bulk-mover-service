@@ -68,8 +68,8 @@ public final class AttributeHelpers {
                 TargetHelpers.setTarget(targetWorkItem, valueId, workItemServer);
             } else if (WorkItemAttributes.VERSION.equals(identifier)) {
                 FoundInHelpers.setFoundIn(targetWorkItem, valueId, workItemServer, monitor);
-            } else {
-                LiteralHelpers.setLiteral(targetWorkItem, attributeId, valueId, workItemServer, monitor);
+            } else if(EnumerationHelpers.isValidEnumerationLiteral(attribute)) {
+                EnumerationHelpers.setEnumerationLiteral(targetWorkItem, attributeId, valueId, workItemServer, monitor);
             }
         }
     }
@@ -93,8 +93,8 @@ public final class AttributeHelpers {
                 value = TargetHelpers.getTarget(attributeValue, auditSrv, teamRawService, monitor);
             } else if (WorkItemAttributes.VERSION.equals(identifier)) {
                 value = FoundInHelpers.getFoundIn(attributeValue, workItemServer, teamRawService, monitor);
-            } else {
-                value = LiteralHelpers.getLiteral(attribute, attributeValue, workItemServer, monitor);
+            } else if(EnumerationHelpers.isValidEnumerationLiteral(attribute)) {
+                value = EnumerationHelpers.getEnumerationLiteral(attribute, attributeValue, workItemServer, monitor);
             }
         }
         return value;
@@ -116,8 +116,10 @@ public final class AttributeHelpers {
             values = TargetHelpers.addTargetsAsValues(pa, workItemServer, monitor);
         } else if (WorkItemAttributes.VERSION.equals(identifier)) {
             values = FoundInHelpers.addFoundInAsValues(pa, workItemServer, monitor);
+        } else if(EnumerationHelpers.isValidEnumerationLiteral(attribute)) {
+            values = EnumerationHelpers.addEnumerationLiteralsAsValues(attribute, workItemServer, monitor);
         } else {
-            values = LiteralHelpers.addLiteralsAsValues(attribute, workItemServer, monitor);
+            return null;
         }
         return values;
     }

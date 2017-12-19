@@ -12,6 +12,8 @@ import java.net.URISyntaxException;
 public final class ProjectAreaHelpers {
 
     public static IProjectAreaHandle getProjectArea(String projectAreaName, TeamRawService service) throws UnsupportedEncodingException, TeamRepositoryException, URISyntaxException {
+        if(projectAreaName == null)
+            return null;
         IProcessServerService processServerService = service.getService(IProcessServerService.class);
         String projectAreaURI = java.net.URLEncoder.encode(projectAreaName, "UTF-8");
         projectAreaURI = projectAreaURI.replace("+", "%20");

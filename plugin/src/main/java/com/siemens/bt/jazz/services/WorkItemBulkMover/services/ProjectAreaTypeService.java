@@ -29,13 +29,13 @@ public class ProjectAreaTypeService extends AbstractRestService {
 
     public void execute() throws IOException, URISyntaxException, AuthenticationException {
         String pa = restRequest.getParameterValue("project-area");
-        if(pa == null) {
-            response.setStatus(400);
-            return;
-        }
         JsonArray typeArray = new JsonArray();
         try {
             IProjectAreaHandle targetArea = ProjectAreaHelpers.getProjectArea(pa, parentService);
+            if(targetArea == null) {
+                response.setStatus(400);
+                return;
+            }
             IWorkItemServer serverService = parentService.getService(IWorkItemServer.class);
             List<IWorkItemType> types = WorkItemTypeHelpers.getWorkItemTypes(targetArea, serverService, new NullProgressMonitor());
             for(IWorkItemType type : types) {
