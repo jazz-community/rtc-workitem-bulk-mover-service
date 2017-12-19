@@ -2,6 +2,7 @@ package com.siemens.bt.jazz.services.WorkItemBulkMover.services;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.repository.common.TeamRepositoryException;
@@ -21,6 +22,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class ProjectAreaTypeService extends AbstractRestService {
     public ProjectAreaTypeService(Log log, HttpServletRequest request, HttpServletResponse response, RestRequest restRequest, TeamRawService parentService) {
@@ -29,7 +32,7 @@ public class ProjectAreaTypeService extends AbstractRestService {
 
     public void execute() throws IOException, URISyntaxException, AuthenticationException {
         String pa = restRequest.getParameterValue("project-area");
-        JsonArray typeArray = new JsonArray();
+        Map<String, JsonElement> typeMap = new TreeMap<String, JsonElement>();
         try {
             IProjectAreaHandle targetArea = ProjectAreaHelpers.getProjectArea(pa, parentService);
             if(targetArea == null) {
@@ -42,11 +45,11 @@ public class ProjectAreaTypeService extends AbstractRestService {
                 JsonObject typeObject = new JsonObject();
                 typeObject.addProperty("id", type.getIdentifier());
                 typeObject.addProperty("name", type.getDisplayName());
-                typeArray.add(typeObject);
+                typeMap.put(type.getDisplayName(), typeObject);
             }
         } catch (TeamRepositoryException e) {
             response.setStatus(500);
         }
-        response.getWriter().write(new Gson().toJson(typeArray));
+        response.getWriter().write(new Gson().toJson(typeMap.values()));
     }
 }
