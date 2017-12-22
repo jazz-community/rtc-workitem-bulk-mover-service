@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: com.siemens.bt.jazz.services.WorkItemBulkMover
 Bundle-SymbolicName: com.siemens.bt.jazz.services.WorkItemBulkMover;singleton:=true
-Bundle-Version: 1.2.0.qualifier
+Bundle-Version: 1.2.1.qualifier
 Bundle-Vendor: VENDOR
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: 
  com.ibm.team.repository.common,
  com.ibm.team.repository.service,
@@ -32,7 +32,7 @@ Require-Bundle:
  com.ibm.team.process.common,
  com.ibm.team.process.service
 Bundle-ClassPath: target/dependency/gson-2.7.jar,
- target/dependency/com.siemens.bt.jazz.services.base-1.0.3-SNAPSHOT.jar,
+ target/dependency/com.siemens.bt.jazz.services.base-2.0.1-SNAPSHOT.jar,
  .
 Import-Package: com.ibm.team.jfs.app,
  com.ibm.team.jfs.app.http.util,
