@@ -16,15 +16,6 @@ public class AttributeDefinitions {
 		 this.attributeDefinitions = new HashMap<String, AttributeDefinition>();
 	}
 	
-//	public void put(AttributeDefinition attributeDefinition) {
-//		AttributeDefinition existingDefinition = attributeDefinitions.get(attributeDefinition.getIdentifier());
-//		if(existingDefinition != null) {
-//			existingDefinition.addValueMappings(attributeDefinition.getMappingDefinitions());
-//		} else {
-//			attributeDefinitions.put(attributeDefinition.getIdentifier(), attributeDefinition);
-//		}
-//	}
-	
 	public Collection<AttributeDefinition> getAttributeDefinitionCollection() {
 
 		return attributeDefinitions.values();

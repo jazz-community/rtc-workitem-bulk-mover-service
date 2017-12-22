@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class FoundInHelpers {
-    static AttributeValue getFoundIn(Object targetValue, IWorkItemServer workItemServer, TeamRawService service, IProgressMonitor monitor) throws TeamRepositoryException {
+    static AttributeValue getFoundIn(Object targetValue, TeamRawService service) throws TeamRepositoryException {
         IRepositoryItemService itemService = service.getService(IRepositoryItemService.class);
         IDeliverableHandle deliverableHandle = (IDeliverableHandle)targetValue;
         IDeliverable deliverable = (IDeliverable) itemService.fetchItem(deliverableHandle, null);

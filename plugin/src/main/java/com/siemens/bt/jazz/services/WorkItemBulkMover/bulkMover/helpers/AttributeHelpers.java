@@ -92,7 +92,7 @@ public final class AttributeHelpers {
             } else if (WorkItemAttributes.TARGET.equals(identifier)) {
                 value = TargetHelpers.getTarget(attributeValue, auditSrv, teamRawService, monitor);
             } else if (WorkItemAttributes.VERSION.equals(identifier)) {
-                value = FoundInHelpers.getFoundIn(attributeValue, workItemServer, teamRawService, monitor);
+                value = FoundInHelpers.getFoundIn(attributeValue, teamRawService);
             } else if(EnumerationHelpers.isValidEnumerationLiteral(attribute)) {
                 value = EnumerationHelpers.getEnumerationLiteral(attribute, attributeValue, workItemServer, monitor);
             }

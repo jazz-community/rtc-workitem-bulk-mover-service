@@ -10,9 +10,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class EnumerationHelpers {
+final class EnumerationHelpers {
 
-    public static final boolean isValidEnumerationLiteral(IAttribute attribute) {
+    static boolean isValidEnumerationLiteral(IAttribute attribute) {
         return AttributeTypes.isEnumerationAttributeType(attribute.getAttributeType())
         || AttributeTypes.isEnumerationListAttributeType(attribute.getAttributeType());
     }
