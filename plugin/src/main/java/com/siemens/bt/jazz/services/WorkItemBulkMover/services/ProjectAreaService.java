@@ -18,8 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class ProjectAreaService extends AbstractRestService {
 
@@ -29,6 +28,13 @@ public class ProjectAreaService extends AbstractRestService {
 
     public void execute() throws IOException, URISyntaxException, AuthenticationException {
         Gson googleJson = new Gson();
+        String ignoredProjectAreas = restRequest.getParameterValue("ignore");
+        List<String> ignorePrjAreaList;
+        if(ignoredProjectAreas != null && ignoredProjectAreas.length() > 0) {
+            ignorePrjAreaList = Arrays.asList(ignoredProjectAreas.split(","));
+        } else {
+            ignorePrjAreaList = new ArrayList<String>();
+        }
         try {
             IProcessServerService processServerService = parentService.getService(IProcessServerService.class);
             IContributorHandle contribHandle = processServerService.getAuthenticatedContributor();
@@ -38,8 +44,10 @@ public class ProjectAreaService extends AbstractRestService {
             IProcessArea[] areas = processServerService.findProcessAreas(contributor, null, null);
             for(IProcessArea a : areas) {
                 IProjectArea pa = (IProjectArea) itemService.fetchItem(a.getProjectArea(), null);
-                String paId = pa.getItemId().toString();
-                projectAreas.put(pa.getName(), new ProjectArea(paId, pa.getName()));
+                String paId = pa.getItemId().getUuidValue();
+                if(!ignorePrjAreaList.contains(paId)) {
+                    projectAreas.put(pa.getName(), new ProjectArea(paId, pa.getName()));
+                }
             }
             String projectAreasJson = googleJson.toJson(projectAreas);
             response.getWriter().write(projectAreasJson);

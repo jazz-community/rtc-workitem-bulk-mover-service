@@ -7,6 +7,10 @@ public class AffectedWorkItem {
     private String chosen;
     private boolean isRequired;
 
+    public AffectedWorkItem(WorkItem workItem) {
+        this(workItem, false);
+    }
+
     public AffectedWorkItem(WorkItem workItem, boolean isRequired) {
         this.workItem = workItem;
         this.isRequired = isRequired;
@@ -20,5 +24,20 @@ public class AffectedWorkItem {
 
     public String getMappedIdentifier() {
         return chosen;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if(object instanceof AffectedWorkItem) {
+            AffectedWorkItem el = (AffectedWorkItem) object;
+            return this.workItem.getId() == el.getWorkItem().getId();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hashCode(workItem.getId());
     }
 }

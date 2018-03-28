@@ -16,7 +16,6 @@ import com.ibm.team.workitem.service.internal.WorkItemWrapper;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.AttributeHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.WorkItemTypeHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.*;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.collections.AttributeDefinitions;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.operations.BulkMoveOperation;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.rtc.models.WorkItem;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -49,7 +48,7 @@ public class WorkItemMover {
      * @throws URISyntaxException
      */
 	@SuppressWarnings("restriction")
-	public MovePreparationResult PrepareMove(List<IWorkItem> sourceWorkItems, IProjectAreaHandle targetArea, Collection<AttributeDefinition> mappingDefinitions, Map<String, String> typeMap) throws UnsupportedEncodingException, TeamRepositoryException, URISyntaxException {
+	public MovePreparationResult PrepareMove(List<IWorkItem> sourceWorkItems, IProjectAreaHandle targetArea, List<AttributeDefinition> mappingDefinitions, Map<String, String> typeMap) throws UnsupportedEncodingException, TeamRepositoryException, URISyntaxException {
 		// run the bulk movement operation
 		BulkMoveOperation oper = new BulkMoveOperation(targetArea, service);
 		oper.run(sourceWorkItems, workItemServer, monitor);
@@ -73,7 +72,7 @@ public class WorkItemMover {
 		}
 
 		// compare source and target work items to track what has changed
-		AttributeDefinitions anRes = analyzeWorkItems2(workItems);
+		Collection<AttributeDefinition> anRes = analyzeWorkItems2(workItems, mappingDefinitions);
 
 		// everything is ready, return the new work items and all analyzation results
 		return new MovePreparationResult(WorkItemMoveMapper.getAllTargetWorkItems(workItems), anRes);
@@ -136,9 +135,7 @@ public class WorkItemMover {
 		return attributes;
 	}
 
-	private AttributeDefinitions analyzeWorkItems2(List<WorkItemMoveMapper> mappedWorkItems) throws TeamRepositoryException {
-		AttributeDefinitions attributeDefinitions = new AttributeDefinitions();
-
+	private Collection<AttributeDefinition> analyzeWorkItems2(List<WorkItemMoveMapper> mappedWorkItems, List<AttributeDefinition> attributeDefinitions) throws TeamRepositoryException {
 		IRepositoryItemService itemService = service.getService(IRepositoryItemService.class);
 
 		for(WorkItemMoveMapper mappedWorkItem : mappedWorkItems) {
@@ -148,7 +145,7 @@ public class WorkItemMover {
 		return attributeDefinitions;
 	}
 
-	private void addWorkItemToAttributeDefinitions(AttributeDefinitions attributeDefinitions, WorkItemMoveMapper mappedWorkItem, IRepositoryItemService itemService) throws TeamRepositoryException {
+	private void addWorkItemToAttributeDefinitions(List<AttributeDefinition> attributeDefinitions, WorkItemMoveMapper mappedWorkItem, IRepositoryItemService itemService) throws TeamRepositoryException {
 		IAuditableServer auditSrv = workItemServer.getAuditableServer();
 		AttributeHelpers attributeHelpers = new AttributeHelpers(service, workItemServer, monitor);
 
@@ -174,11 +171,13 @@ public class WorkItemMover {
 									&& (areBothNullButRequired(isRequired, sourceValue, targetValue)
 											|| !areValuesEqual(sourceValue, targetValue))
 									&& !AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier())) {
-								if(!attributeDefinitions.contains(sourceAttr.getIdentifier())) {
+								int idx = attributeDefinitions.indexOf(new AttributeDefinition(targetAttr.getIdentifier()));
+								if(idx < 0) {
 									AttributeDefinition definition = new AttributeDefinition(targetAttr.getIdentifier(), targetAttr.getDisplayName());
 									attributeDefinitions.add(definition);
+									idx = attributeDefinitions.indexOf(definition);
 								}
-								AttributeDefinition definition = attributeDefinitions.get(sourceAttr.getIdentifier());
+								AttributeDefinition definition = attributeDefinitions.get(idx);
 								AttributeValue oldAttributeValue = attributeHelpers.getCurrentValueRepresentation(sourceAttr, sourceWorkItem);
 								MappingDefinition mapping = definition.getMapping(oldAttributeValue.getIdentifier());
 								WorkItem wi = new WorkItem(sourceWorkItem.getId(), sourceWorkItem.getHTMLSummary().getPlainText(), null);
@@ -191,7 +190,11 @@ public class WorkItemMover {
 										def.addAllowedValues(val);
 									}
 								} else {
-									mapping.addAffectedWorkItem(wi, isRequired);
+									List<AffectedWorkItem> mappings = mapping.getAffectedWorkItems();
+									int wiIdx = mappings.indexOf(new AffectedWorkItem(wi, isRequired));
+									if(wiIdx < 0) {
+										mapping.addAffectedWorkItem(wi, isRequired);
+									}
 								}
 							}
 						}

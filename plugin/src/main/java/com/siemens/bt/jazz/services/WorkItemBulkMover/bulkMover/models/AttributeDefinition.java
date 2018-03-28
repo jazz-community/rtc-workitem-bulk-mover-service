@@ -11,7 +11,12 @@ public class AttributeDefinition {
 	private String identifier;
 	private String displayName;
 	private List<MappingDefinition> valueMappings;
-	
+
+	public AttributeDefinition(String id) {
+		this.identifier = id;
+		valueMappings = new ArrayList<MappingDefinition>();
+	}
+
 	public AttributeDefinition(String id, String name) {
 		this.identifier = id;
 		this.displayName = name;
@@ -52,5 +57,10 @@ public class AttributeDefinition {
 	    } else {
 	        return false;
 	    }
+	}
+
+	@Override
+	public int hashCode() {
+		return java.util.Objects.hashCode(identifier);
 	}
 }

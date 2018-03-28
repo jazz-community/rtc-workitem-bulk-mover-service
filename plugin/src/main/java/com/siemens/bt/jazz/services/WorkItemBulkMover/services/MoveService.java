@@ -71,7 +71,7 @@ public class MoveService extends AbstractRestService {
         }
         // map cient data to model
         Collection<Integer> clientWorkItemList = gson.fromJson(workItemJson, workItemIdCollectionType);
-        Collection<AttributeDefinition> clientMappingDefinitions = gson.fromJson(attributesJson, attributesCollectionType);
+        List<AttributeDefinition> clientMappingDefinitions = gson.fromJson(attributesJson, attributesCollectionType);
         Collection<TypeMappingEntry> typeMappingDefinitions = gson.fromJson(typeMappingJson, typeMappingCollectionType);
         Map<String, String> typeMap = new HashMap<String, String>();
         for (TypeMappingEntry def : typeMappingDefinitions) {
@@ -89,7 +89,7 @@ public class MoveService extends AbstractRestService {
 			MovePreparationResult preparationResult = mover.PrepareMove(items, targetArea, clientMappingDefinitions, typeMap);
 
 			// store attribute based ovservations to be able to return this information to the end user
-			moveResults = preparationResult.getAttributeDefinitions().getAttributeDefinitionCollection();
+			moveResults = preparationResult.getAttributeDefinitions();
 
 			if(!previewOnly) {
                 // try to move the work items...
