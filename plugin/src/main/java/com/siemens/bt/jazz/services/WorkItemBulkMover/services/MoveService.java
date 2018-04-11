@@ -19,7 +19,6 @@ import com.siemens.bt.jazz.services.base.rest.AbstractRestService;
 import com.siemens.bt.jazz.services.base.rest.RestRequest;
 import com.siemens.bt.jazz.services.base.utils.RequestReader;
 import org.apache.commons.logging.Log;
-import org.apache.http.auth.AuthenticationException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -28,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.URISyntaxException;
 import java.util.*;
 
 public class MoveService extends AbstractRestService {
@@ -51,7 +49,7 @@ public class MoveService extends AbstractRestService {
         this.resultsType = new TypeToken<Collection<AttributeDefinition>>() {}.getType();
     }
 	
-	public void execute() throws IOException, URISyntaxException, AuthenticationException {
+	public void execute() throws IOException {
         JsonObject responseJson = new JsonObject();
         WorkItemMover mover = new WorkItemMover(parentService);
         boolean isMoved = false;
