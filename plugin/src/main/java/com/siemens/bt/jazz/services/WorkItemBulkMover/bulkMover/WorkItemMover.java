@@ -21,8 +21,6 @@ import com.siemens.bt.jazz.services.WorkItemBulkMover.rtc.models.WorkItem;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -43,12 +41,10 @@ public class WorkItemMover {
      * @param targetArea the target project area for all those work items
      * @param mappingDefinitions the mapping definition provided by the user
      * @return work items and attribute definitions
-     * @throws UnsupportedEncodingException
-     * @throws TeamRepositoryException
-     * @throws URISyntaxException
+     * @throws TeamRepositoryException if anything with RTC goes wrong
      */
 	@SuppressWarnings("restriction")
-	public MovePreparationResult PrepareMove(List<IWorkItem> sourceWorkItems, IProjectAreaHandle targetArea, List<AttributeDefinition> mappingDefinitions, Map<String, String> typeMap) throws UnsupportedEncodingException, TeamRepositoryException, URISyntaxException {
+	public MovePreparationResult PrepareMove(List<IWorkItem> sourceWorkItems, IProjectAreaHandle targetArea, List<AttributeDefinition> mappingDefinitions, Map<String, String> typeMap) throws TeamRepositoryException {
 		// run the bulk movement operation
 		BulkMoveOperation oper = new BulkMoveOperation(targetArea, service);
 		oper.run(sourceWorkItems, workItemServer, monitor);
@@ -157,9 +153,8 @@ public class WorkItemMover {
 		if(!sourceArea.sameItemId(targetArea)) {
 			List<IAttribute> sourceAttrs = workItemServer.findAttributes(sourceArea, monitor);
 			List<IAttribute> targetAttrs = workItemServer.findAttributes(targetArea, monitor);
-			// read required attributes from target process
 			Collection<String> requiredAttributes = workItemServer.findRequiredAttributes(targetWorkItem, null, monitor);
-
+			List<IAttribute> requiredAttrs = new ArrayList<IAttribute>();
 			for(IAttribute sourceAttr : sourceAttrs) {
 				if(sourceWorkItem.hasAttribute(sourceAttr)) {
 					Object sourceValue = sourceAttr.getValue(auditSrv, sourceWorkItem, monitor);
@@ -167,41 +162,62 @@ public class WorkItemMover {
 						if(targetWorkItem.hasAttribute(targetAttr)) {
 							Object targetValue = targetAttr.getValue(auditSrv, targetWorkItem, monitor);
 							boolean isRequired = requiredAttributes.contains(targetAttr.getIdentifier());
+							if(isRequired) {
+								requiredAttributes.remove(targetAttr.getIdentifier());
+								requiredAttrs.add(targetAttr);
+							}
 							if(targetAttr.getIdentifier().equals(sourceAttr.getIdentifier())
 									&& (areBothNullButRequired(isRequired, sourceValue, targetValue)
 											|| !areValuesEqual(sourceValue, targetValue))
 									&& !AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier())) {
-								int idx = attributeDefinitions.indexOf(new AttributeDefinition(targetAttr.getIdentifier()));
-								if(idx < 0) {
-									AttributeDefinition definition = new AttributeDefinition(targetAttr.getIdentifier(), targetAttr.getDisplayName());
-									attributeDefinitions.add(definition);
-									idx = attributeDefinitions.indexOf(definition);
-								}
-								AttributeDefinition definition = attributeDefinitions.get(idx);
-								AttributeValue oldAttributeValue = attributeHelpers.getCurrentValueRepresentation(sourceAttr, sourceWorkItem);
-								MappingDefinition mapping = definition.getMapping(oldAttributeValue.getIdentifier());
-								WorkItem wi = new WorkItem(sourceWorkItem.getId(), sourceWorkItem.getHTMLSummary().getPlainText(), null);
-								if(mapping == null) {
-									List<AttributeValue> val = attributeHelpers.getAvailableOptionsPresentations(targetAttr, targetWorkItem);
-									if(val != null) {
-										MappingDefinition def = new MappingDefinition(
-												oldAttributeValue, new AffectedWorkItem(wi, isRequired));
-										definition.addValueMapping(def);
-										def.addAllowedValues(val);
-									}
-								} else {
-									List<AffectedWorkItem> mappings = mapping.getAffectedWorkItems();
-									int wiIdx = mappings.indexOf(new AffectedWorkItem(wi, isRequired));
-									if(wiIdx < 0) {
-										mapping.addAffectedWorkItem(wi, isRequired);
-									}
-								}
+								CreateAttributeDefinition(attributeDefinitions, attributeHelpers, sourceWorkItem, targetWorkItem, sourceAttr, targetAttr, isRequired);
 							}
 						}
 					}
 				}
 			}
+
+			List<String> mappedAttrIds = new ArrayList<String>();
+			for(AttributeDefinition map : attributeDefinitions) {
+				mappedAttrIds.add(map.getIdentifier());
+			}
+
+			for(IAttribute reqAttr : requiredAttrs) {
+				if(!mappedAttrIds.contains(reqAttr.getIdentifier())) {
+					CreateAttributeDefinition(attributeDefinitions, attributeHelpers, sourceWorkItem, targetWorkItem, null, reqAttr, true);
+				}
+			}
 		}
+	}
+
+	private void CreateAttributeDefinition(List<AttributeDefinition> attributeDefinitions, AttributeHelpers attributeHelpers, IWorkItem sourceWorkItem, IWorkItem targetWorkItem, IAttribute sourceAttr, IAttribute targetAttr, boolean isRequired) throws TeamRepositoryException {
+		int idx = attributeDefinitions.indexOf(new AttributeDefinition(targetAttr.getIdentifier()));
+		if(idx < 0) {
+            AttributeDefinition definition = new AttributeDefinition(targetAttr.getIdentifier(), targetAttr.getDisplayName());
+            attributeDefinitions.add(definition);
+            idx = attributeDefinitions.indexOf(definition);
+        }
+		AttributeDefinition definition = attributeDefinitions.get(idx);
+		AttributeValue oldAttributeValue = attributeHelpers.getCurrentValueRepresentation(sourceAttr, sourceWorkItem);
+		MappingDefinition mapping = definition.getMapping(oldAttributeValue.getIdentifier());
+		WorkItem wi = new WorkItem(sourceWorkItem.getId(), sourceWorkItem.getHTMLSummary().getPlainText(), null);
+		if(mapping == null) {
+            List<AttributeValue> val = attributeHelpers.getAvailableOptionsPresentations(targetAttr, targetWorkItem);
+			MappingDefinition def = new MappingDefinition(
+					oldAttributeValue, new AffectedWorkItem(wi, isRequired));
+			definition.addValueMapping(def);
+            if(val != null && val.size() > 0) {
+                def.addAllowedValues(val);
+            } else {
+            	def.setError("No items available!");
+			}
+        } else {
+            List<AffectedWorkItem> mappings = mapping.getAffectedWorkItems();
+            int wiIdx = mappings.indexOf(new AffectedWorkItem(wi, isRequired));
+            if(wiIdx < 0) {
+                mapping.addAffectedWorkItem(wi, isRequired);
+            }
+        }
 	}
 
 	private boolean areBothNullButRequired(boolean isReuqired, Object sourceValue, Object targetValue) {

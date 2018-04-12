@@ -10,6 +10,7 @@ public class MappingDefinition {
 	private List<AffectedWorkItem> affectedWorkItems;
     private List<AttributeValue> allowedValues;
     private String chosen;
+    private String error;
 	private boolean showDetails = false;
 
 	public MappingDefinition(AttributeValue oldValue, AffectedWorkItem affectedWorkItem) {
@@ -17,6 +18,7 @@ public class MappingDefinition {
         allowedValues = new ArrayList<AttributeValue>();
         this.affectedWorkItems = new ArrayList<AffectedWorkItem>();
 	    this.affectedWorkItems.add(affectedWorkItem);
+	    this.error = null;
         this.chosen = "nothing";
     }
 
@@ -38,5 +40,9 @@ public class MappingDefinition {
 
     public AttributeValue getOldValue() {
         return oldValue;
+    }
+
+    public void setError(String errorMsg) {
+	    this.error = errorMsg;
     }
 }
