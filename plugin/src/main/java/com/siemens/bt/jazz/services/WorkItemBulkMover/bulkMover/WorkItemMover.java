@@ -7,8 +7,11 @@ import com.ibm.team.repository.common.TeamRepositoryException;
 import com.ibm.team.repository.service.IRepositoryItemService;
 import com.ibm.team.repository.service.TeamRawService;
 import com.ibm.team.workitem.common.internal.IAdditionalSaveParameters;
+import com.ibm.team.workitem.common.internal.model.WorkItemAttributes;
+import com.ibm.team.workitem.common.internal.util.EMFHelper;
 import com.ibm.team.workitem.common.model.IAttribute;
 import com.ibm.team.workitem.common.model.IWorkItem;
+import com.ibm.team.workitem.common.model.Identifier;
 import com.ibm.team.workitem.service.IAuditableServer;
 import com.ibm.team.workitem.service.IWorkItemServer;
 import com.ibm.team.workitem.service.IWorkItemWrapper;
@@ -51,8 +54,18 @@ public class WorkItemMover {
 
 		// get the workitems involved into the move operation
 		List<WorkItemMoveMapper> workItems = oper.getMappedWorkItems();
-		if(workItems.size() == 0) {
-			throw new TeamRepositoryException("No work Items found to move. This likely happens if Source and Targer project area are the same");
+		if(workItems.size() < sourceWorkItems.size()) {
+			List<Integer> mappedIds = new ArrayList<Integer>();
+			for(WorkItemMoveMapper entry : workItems) {
+				mappedIds.add(new Integer(entry.getId()));
+			}
+
+			for(IWorkItem sourceWorkItem : sourceWorkItems) {
+				if(!mappedIds.contains(sourceWorkItem.getId())) {
+					IWorkItem sourceItem = (IWorkItem) EMFHelper.copy(sourceWorkItem);
+					workItems.add(new WorkItemMoveMapper(sourceItem, sourceWorkItem));
+				}
+			}
 		}
 
 		// update work item type according to client mapping
@@ -150,50 +163,58 @@ public class WorkItemMover {
 		IProjectArea sourceArea = (IProjectArea) itemService.fetchItem(sourceWorkItem.getProjectArea(), null);
 		IProjectArea targetArea = (IProjectArea) itemService.fetchItem(targetWorkItem.getProjectArea(), null);
 
-		if(!sourceArea.sameItemId(targetArea)) {
-			List<IAttribute> sourceAttrs = workItemServer.findAttributes(sourceArea, monitor);
-			List<IAttribute> targetAttrs = workItemServer.findAttributes(targetArea, monitor);
-			Collection<String> requiredAttributes = workItemServer.findRequiredAttributes(targetWorkItem, null, monitor);
-			List<IAttribute> requiredAttrs = new ArrayList<IAttribute>();
-			for(IAttribute sourceAttr : sourceAttrs) {
-				if(sourceWorkItem.hasAttribute(sourceAttr)) {
-					Object sourceValue = sourceAttr.getValue(auditSrv, sourceWorkItem, monitor);
-					for(IAttribute targetAttr : targetAttrs) {
-						if(targetWorkItem.hasAttribute(targetAttr)) {
-							Object targetValue = targetAttr.getValue(auditSrv, targetWorkItem, monitor);
-							boolean isRequired = requiredAttributes.contains(targetAttr.getIdentifier());
-							if(isRequired) {
-								requiredAttributes.remove(targetAttr.getIdentifier());
-								requiredAttrs.add(targetAttr);
-							}
-							if(targetAttr.getIdentifier().equals(sourceAttr.getIdentifier())
-									&& (areBothNullButRequired(isRequired, sourceValue, targetValue)
-											|| !areValuesEqual(sourceValue, targetValue))
-									&& !AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier())) {
-								CreateAttributeDefinition(attributeDefinitions, attributeHelpers, sourceWorkItem, targetWorkItem, sourceAttr, targetAttr, isRequired);
-							}
+		List<String> mappedAttrIds = new ArrayList<String>();
+		List<IAttribute> sourceAttrs = workItemServer.findAttributes(sourceArea, monitor);
+		List<IAttribute> targetAttrs = workItemServer.findAttributes(targetArea, monitor);
+		Collection<String> requiredAttributes = workItemServer.findRequiredAttributes(targetWorkItem, null, monitor);
+        List<String> alwaysMap = new ArrayList<String>();
+		if(!sourceWorkItem.getWorkItemType().equals(targetWorkItem.getWorkItemType())) {
+			//Identifier<IAttribute> stateId = WorkItemAttributes.STATE;
+			//requiredAttributes.add(stateId.getScopedIdentifier());
+            requiredAttributes.add(IWorkItem.STATE_PROPERTY);
+            alwaysMap.add(IWorkItem.STATE_PROPERTY);
+            alwaysMap.add(IWorkItem.RESOLUTION_PROPERTY);
+		}
+		List<IAttribute> requiredAttrs = new ArrayList<IAttribute>();
+
+		for(IAttribute sourceAttr : sourceAttrs) {
+			if(sourceWorkItem.hasAttribute(sourceAttr)) {
+				mappedAttrIds.add(sourceAttr.getIdentifier());
+				Object sourceValue = sourceAttr.getValue(auditSrv, sourceWorkItem, monitor);
+				for(IAttribute targetAttr : targetAttrs) {
+					if(targetWorkItem.hasAttribute(targetAttr)) {
+						Object targetValue = targetAttr.getValue(auditSrv, targetWorkItem, monitor);
+						boolean isRequired = requiredAttributes.contains(targetAttr.getIdentifier());
+						if(isRequired) {
+							requiredAttributes.remove(targetAttr.getIdentifier());
+							requiredAttrs.add(targetAttr);
+						}
+						if(targetAttr.getIdentifier().equals(sourceAttr.getIdentifier())
+								&& (areBothNullButRequired(isRequired, sourceValue, targetValue)
+										|| !areValuesEqual(sourceValue, targetValue))
+								&& !AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier())) {
+							CreateAttributeDefinition(attributeDefinitions, attributeHelpers, sourceWorkItem, targetWorkItem, sourceAttr, targetAttr, isRequired);
 						}
 					}
 				}
 			}
+		}
 
-			List<String> mappedAttrIds = new ArrayList<String>();
-			for(AttributeDefinition map : attributeDefinitions) {
-				mappedAttrIds.add(map.getIdentifier());
-			}
-
-			for(IAttribute reqAttr : requiredAttrs) {
-				if(!mappedAttrIds.contains(reqAttr.getIdentifier())) {
-					CreateAttributeDefinition(attributeDefinitions, attributeHelpers, sourceWorkItem, targetWorkItem, null, reqAttr, true);
-				}
-			}
+		for(IAttribute reqAttr : requiredAttrs) {
+			if(!mappedAttrIds.contains(reqAttr.getIdentifier())) {
+				CreateAttributeDefinition(attributeDefinitions, attributeHelpers, sourceWorkItem, targetWorkItem, null, reqAttr, true);
+			} else if(alwaysMap.contains(reqAttr.getIdentifier())) {
+			    IAttribute sourceAttr = workItemServer.findAttribute(sourceWorkItem.getProjectArea(), reqAttr.getIdentifier(), null);
+                CreateAttributeDefinition(attributeDefinitions, attributeHelpers, sourceWorkItem, targetWorkItem, sourceAttr, reqAttr, true);
+            }
 		}
 	}
 
 	private void CreateAttributeDefinition(List<AttributeDefinition> attributeDefinitions, AttributeHelpers attributeHelpers, IWorkItem sourceWorkItem, IWorkItem targetWorkItem, IAttribute sourceAttr, IAttribute targetAttr, boolean isRequired) throws TeamRepositoryException {
-		int idx = attributeDefinitions.indexOf(new AttributeDefinition(targetAttr.getIdentifier()));
+		boolean isPrimitive = AttributeHelpers.isPrimitiveCustomAttributeType(targetAttr);
+		int idx = attributeDefinitions.indexOf(new AttributeDefinition(targetAttr.getIdentifier(), isPrimitive));
 		if(idx < 0) {
-            AttributeDefinition definition = new AttributeDefinition(targetAttr.getIdentifier(), targetAttr.getDisplayName());
+            AttributeDefinition definition = new AttributeDefinition(targetAttr.getIdentifier(), targetAttr.getDisplayName(), isPrimitive);
             attributeDefinitions.add(definition);
             idx = attributeDefinitions.indexOf(definition);
         }
@@ -204,7 +225,7 @@ public class WorkItemMover {
 		if(mapping == null) {
             List<AttributeValue> val = attributeHelpers.getAvailableOptionsPresentations(targetAttr, targetWorkItem);
 			MappingDefinition def = new MappingDefinition(
-					oldAttributeValue, new AffectedWorkItem(wi, isRequired));
+					oldAttributeValue, new AffectedWorkItem(wi, isRequired), isPrimitive);
 			definition.addValueMapping(def);
             if(val != null && val.size() > 0) {
                 def.addAllowedValues(val);

@@ -24,9 +24,10 @@ public final class AttributeHelpers {
         this.monitor = monitor;
     }
 
-    private static final String ATTRIBUTE_TYPE_CATEGORY = "category";
-    private static final String ATTRIBUTE_TYPE_INTERVAL = "interval";
-    private static final String ATTRIBUTE_TYPE_DELIVERABLE = "deliverable";
+    private static final Set<String> BUILT_IN_ATTRIBUTES_TO_IGNORE = new HashSet<String>(Arrays.asList(
+            IWorkItem.STATE_PROPERTY,
+            IWorkItem.RESOLUTION_PROPERTY
+    ));
 
     /**
      * The attributes which can be safely ingored for movement scenarios
@@ -67,18 +68,19 @@ public final class AttributeHelpers {
                 ResolutionHelpers.setResolution(targetWorkItem, valueId, workItemServer, monitor);
             } else if (WorkItemAttributes.STATE.equals(identifier)) {
                 StateHelpers.setState(targetWorkItem, valueId, workItemServer, monitor);
-            } else if (ATTRIBUTE_TYPE_CATEGORY.equals(type)) {
-                CategoryHelpers.setCategory(targetWorkItem, valueId, workItemServer, monitor);
-            } else if (ATTRIBUTE_TYPE_INTERVAL.equals(type)) {
-                TargetHelpers.setTarget(targetWorkItem, valueId, workItemServer);
-            } else if (ATTRIBUTE_TYPE_DELIVERABLE.equals(type)) {
-                FoundInHelpers.setFoundIn(targetWorkItem, valueId, workItemServer, monitor);
+            } else if (AttributeTypes.CATEGORY.equals(type)) {
+                CategoryHelpers.setCategory(targetWorkItem, attribute, valueId, workItemServer, monitor);
+            } else if (AttributeTypes.ITERATION.equals(type)) {
+                TargetHelpers.setTarget(targetWorkItem, attribute, valueId, workItemServer);
+            } else if (AttributeTypes.DELIVERABLE.equals(type)) {
+                FoundInHelpers.setFoundIn(targetWorkItem, attribute, valueId, workItemServer, monitor);
             } else if(EnumerationHelpers.isValidEnumerationLiteral(attribute)) {
                 EnumerationHelpers.setEnumerationLiteral(targetWorkItem, attributeId, valueId, workItemServer, monitor);
+            } else if (isPrimitiveCustomAttributeType(attribute)) {
+                PrimitiveHelpers.setPrimitive(targetWorkItem, attribute, valueId);
             }
         }
     }
-
 
     @SuppressWarnings("restriction")
     public AttributeValue getCurrentValueRepresentation(IAttribute attribute, IWorkItem workItem) throws TeamRepositoryException {
@@ -95,14 +97,16 @@ public final class AttributeHelpers {
                     value = ResolutionHelpers.getResolution(attributeValue, workItem, workItemServer, monitor);
                 } else if (WorkItemAttributes.STATE.equals(identifier)) {
                     value = StateHelpers.getState(attributeValue, workItem, workItemServer, monitor);
-                } else if (ATTRIBUTE_TYPE_CATEGORY.equals(type)) {
+                } else if (AttributeTypes.CATEGORY.equals(type)) {
                     value = CategoryHelpers.getCategory(attributeValue, workItemServer, teamRawService, monitor);
-                } else if (ATTRIBUTE_TYPE_INTERVAL.equals(type)) {
+                } else if (AttributeTypes.ITERATION.equals(type)) {
                     value = TargetHelpers.getTarget(attributeValue, auditSrv, teamRawService, monitor);
-                } else if (ATTRIBUTE_TYPE_DELIVERABLE.equals(type)) {
+                } else if (AttributeTypes.DELIVERABLE.equals(type)) {
                     value = FoundInHelpers.getFoundIn(attributeValue, teamRawService);
                 } else if (EnumerationHelpers.isValidEnumerationLiteral(attribute)) {
                     value = EnumerationHelpers.getEnumerationLiteral(attribute, attributeValue, workItemServer, monitor);
+                } else if (isPrimitiveCustomAttributeType(attribute)) {
+                    value = PrimitiveHelpers.getPrimitive(workItem, attribute);
                 }
             }
         }
@@ -120,17 +124,29 @@ public final class AttributeHelpers {
             values = ResolutionHelpers.addResolutionsAsValues(pa, workItemServer, monitor);
         } else if (WorkItemAttributes.STATE.equals(identifier)) {
             values = StateHelpers.addStatesAsValues(pa, workItem, workItemServer, monitor);
-        } else if (ATTRIBUTE_TYPE_CATEGORY.equals(type)) {
+        } else if (AttributeTypes.CATEGORY.equals(type)) {
             values = CategoryHelpers.addCategoriesAsValues(pa, workItemServer, monitor);
-        } else if (ATTRIBUTE_TYPE_INTERVAL.equals(type)) {
+        } else if (AttributeTypes.ITERATION.equals(type)) {
             values = TargetHelpers.addTargetsAsValues(pa, workItemServer, monitor);
-        } else if (ATTRIBUTE_TYPE_DELIVERABLE.equals(type)) {
+        } else if (AttributeTypes.DELIVERABLE.equals(type)) {
             values = FoundInHelpers.addFoundInAsValues(pa, workItemServer, monitor);
         } else if(EnumerationHelpers.isValidEnumerationLiteral(attribute)) {
             values = EnumerationHelpers.addEnumerationLiteralsAsValues(attribute, workItemServer, monitor);
+        } else if (isPrimitiveCustomAttributeType(attribute)) {
+            values = null; // not needed for primitives
         } else {
-            return null;
+            values = null;
         }
         return values;
+    }
+
+    public static boolean isPrimitiveCustomAttributeType(IAttribute attribute) {
+        String type = attribute.getAttributeType();
+        return (AttributeTypes.isPrimitiveAttributeType(type)
+                && !AttributeTypes.CATEGORY.equals(type)
+                && !AttributeTypes.ITERATION.equals(type)
+                && !AttributeTypes.DELIVERABLE.equals(type)
+                && !EnumerationHelpers.isValidEnumerationLiteral(attribute)
+                && !BUILT_IN_ATTRIBUTES_TO_IGNORE.contains(attribute.getIdentifier()));
     }
 }

@@ -13,13 +13,13 @@ public class MappingDefinition {
     private String error;
 	private boolean showDetails = false;
 
-	public MappingDefinition(AttributeValue oldValue, AffectedWorkItem affectedWorkItem) {
+	public MappingDefinition(AttributeValue oldValue, AffectedWorkItem affectedWorkItem, boolean isPrimitive) {
 	    this.oldValue = oldValue;
-        allowedValues = new ArrayList<AttributeValue>();
+        this.allowedValues = new ArrayList<AttributeValue>();
         this.affectedWorkItems = new ArrayList<AffectedWorkItem>();
 	    this.affectedWorkItems.add(affectedWorkItem);
 	    this.error = null;
-        this.chosen = "nothing";
+        this.chosen = "";
     }
 
     public void addAffectedWorkItem(WorkItem wi, boolean isRequired) {

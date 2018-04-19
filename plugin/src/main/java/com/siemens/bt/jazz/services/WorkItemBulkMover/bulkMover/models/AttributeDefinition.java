@@ -11,15 +11,18 @@ public class AttributeDefinition {
 	private String identifier;
 	private String displayName;
 	private List<MappingDefinition> valueMappings;
+	private boolean isPrimitive;
 
-	public AttributeDefinition(String id) {
+	public AttributeDefinition(String id, boolean isPrimitive) {
 		this.identifier = id;
+		this.isPrimitive = isPrimitive;
 		valueMappings = new ArrayList<MappingDefinition>();
 	}
 
-	public AttributeDefinition(String id, String name) {
+	public AttributeDefinition(String id, String name, boolean isPrimitive) {
 		this.identifier = id;
 		this.displayName = name;
+		this.isPrimitive = isPrimitive;
 		valueMappings = new ArrayList<MappingDefinition>();
 	}
 	

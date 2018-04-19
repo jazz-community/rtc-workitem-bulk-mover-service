@@ -14,7 +14,7 @@ public class AffectedWorkItem {
     public AffectedWorkItem(WorkItem workItem, boolean isRequired) {
         this.workItem = workItem;
         this.isRequired = isRequired;
-        this.chosen = "nothing";
+        this.chosen = "";
     }
 
     public WorkItem getWorkItem() {
@@ -31,9 +31,8 @@ public class AffectedWorkItem {
         if(object instanceof AffectedWorkItem) {
             AffectedWorkItem el = (AffectedWorkItem) object;
             return this.workItem.getId() == el.getWorkItem().getId();
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

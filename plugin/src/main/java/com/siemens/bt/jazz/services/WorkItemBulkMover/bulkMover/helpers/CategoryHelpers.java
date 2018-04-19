@@ -4,10 +4,7 @@ import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.repository.common.TeamRepositoryException;
 import com.ibm.team.repository.service.IRepositoryItemService;
 import com.ibm.team.repository.service.TeamRawService;
-import com.ibm.team.workitem.common.model.CategoryId;
-import com.ibm.team.workitem.common.model.ICategory;
-import com.ibm.team.workitem.common.model.ICategoryHandle;
-import com.ibm.team.workitem.common.model.IWorkItem;
+import com.ibm.team.workitem.common.model.*;
 import com.ibm.team.workitem.service.IWorkItemServer;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.AttributeValue;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -28,13 +25,13 @@ final class CategoryHelpers {
         return new AttributeValue(idString, fullPathname);
     }
 
-    static void setCategory(IWorkItem workItem, String categoryId,
+    static void setCategory(IWorkItem workItem, IAttribute attribute, String categoryId,
                             IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         IProjectAreaHandle ipa = workItem.getProjectArea();
         if(isValidCategoryId(categoryId)) {
             CategoryId cid =  CategoryId.createCategoryId(categoryId);
             ICategoryHandle cat = workItemServer.findCategoryById2(ipa, cid, monitor);
-            workItem.setCategory(cat);
+            workItem.setValue(attribute, cat);
         }
     }
 

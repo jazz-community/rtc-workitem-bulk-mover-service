@@ -42,7 +42,6 @@ final class StateHelpers {
                 workItem.setState2(state);
             }
         }
-        //TODO this impl is no longer valid! Problem is that setState2 is deprecated
     }
 
     static List<AttributeValue> addStatesAsValues(IProjectAreaHandle pa, IWorkItem wi,

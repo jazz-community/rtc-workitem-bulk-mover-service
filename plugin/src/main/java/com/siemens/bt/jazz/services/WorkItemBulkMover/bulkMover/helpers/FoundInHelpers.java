@@ -25,9 +25,8 @@ final class FoundInHelpers {
         }
     }
 
-    static void setFoundIn(IWorkItem workItem, String targetValue,
+    static void setFoundIn(IWorkItem workItem, IAttribute foundInAttr, String targetValue,
                            IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
-        IAttribute foundInAttr = workItemServer.findAttribute(workItem.getProjectArea(), IWorkItem.FOUND_IN_PROPERTY, monitor);
         IDeliverable deliverable = workItemServer.findDeliverableByName(workItem.getProjectArea(), targetValue, IDeliverable.DEFAULT_PROFILE, monitor);
         if(deliverable != null) {
             workItem.setValue(foundInAttr, deliverable.getItemHandle());

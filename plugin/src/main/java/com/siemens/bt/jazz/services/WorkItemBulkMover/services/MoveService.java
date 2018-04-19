@@ -96,7 +96,7 @@ public class MoveService extends AbstractRestService {
             }
 		} catch (Exception e) {
             // Inform the user the the items could not be moved
-            responseJson.addProperty("error", e.getMessage());
+                responseJson.addProperty("error", e.getMessage());
 		}
 
         // prepare data to be returend
