@@ -72,6 +72,12 @@ public class WorkItemMover {
 		for(WorkItemMoveMapper entry : workItems) {
 			String sourceType = entry.getSourceWorkItem().getWorkItemType();
 			String targetType = typeMap.get(sourceType);
+
+			if(entry.getSourceWorkItem().getProjectArea().sameItemId(targetArea)
+			        && sourceType.equals(targetType)) {
+			    throw new TeamRepositoryException("No move possible if source and target project area AND source and target work item type are the same");
+            }
+
 			WorkItemTypeHelpers.setWorkItemType(entry.getSourceWorkItem(), entry.getTargetWorkItem(), sourceType, targetType, workItemServer, monitor);
 		}
 
@@ -198,7 +204,7 @@ public class WorkItemMover {
 			}
 		}
 
-    		for(IAttribute reqAttr : requiredAttrs) {
+		for(IAttribute reqAttr : requiredAttrs) {
 			if(!mappedAttrIds.contains(reqAttr.getIdentifier())) {
 				CreateAttributeDefinition(attributeDefinitions, attributeHelpers, sourceWorkItem, targetWorkItem, null, reqAttr, true);
 			} else if(alwaysMap.contains(reqAttr.getIdentifier())) {
