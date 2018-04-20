@@ -169,8 +169,6 @@ public class WorkItemMover {
 		Collection<String> requiredAttributes = workItemServer.findRequiredAttributes(targetWorkItem, null, monitor);
         List<String> alwaysMap = new ArrayList<String>();
 		if(!sourceWorkItem.getWorkItemType().equals(targetWorkItem.getWorkItemType())) {
-			//Identifier<IAttribute> stateId = WorkItemAttributes.STATE;
-			//requiredAttributes.add(stateId.getScopedIdentifier());
             requiredAttributes.add(IWorkItem.STATE_PROPERTY);
             alwaysMap.add(IWorkItem.STATE_PROPERTY);
             alwaysMap.add(IWorkItem.RESOLUTION_PROPERTY);
@@ -185,14 +183,14 @@ public class WorkItemMover {
 					if(targetWorkItem.hasAttribute(targetAttr)) {
 						Object targetValue = targetAttr.getValue(auditSrv, targetWorkItem, monitor);
 						boolean isRequired = requiredAttributes.contains(targetAttr.getIdentifier());
-						if(isRequired) {
-							requiredAttributes.remove(targetAttr.getIdentifier());
-							requiredAttrs.add(targetAttr);
-						}
 						if(targetAttr.getIdentifier().equals(sourceAttr.getIdentifier())
 								&& (areBothNullButRequired(isRequired, sourceValue, targetValue)
 										|| !areValuesEqual(sourceValue, targetValue))
 								&& !AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier())) {
+							if(isRequired) {
+								requiredAttributes.remove(targetAttr.getIdentifier());
+								requiredAttrs.add(targetAttr);
+							}
 							CreateAttributeDefinition(attributeDefinitions, attributeHelpers, sourceWorkItem, targetWorkItem, sourceAttr, targetAttr, isRequired);
 						}
 					}
@@ -200,7 +198,7 @@ public class WorkItemMover {
 			}
 		}
 
-		for(IAttribute reqAttr : requiredAttrs) {
+    		for(IAttribute reqAttr : requiredAttrs) {
 			if(!mappedAttrIds.contains(reqAttr.getIdentifier())) {
 				CreateAttributeDefinition(attributeDefinitions, attributeHelpers, sourceWorkItem, targetWorkItem, null, reqAttr, true);
 			} else if(alwaysMap.contains(reqAttr.getIdentifier())) {
