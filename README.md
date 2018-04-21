@@ -23,7 +23,7 @@ You can provide a black list of project areas that should not be included in the
 > GET `BASE`/project-areas?ignore=_3Ud7oP5aEeanwOtOCiP3RQ,_3Ud7oP5aEeanwOtOCiP3RQ
 
 *Example Response:*
-```
+```javascript
 [
    {
       "id":"_3Ud7oP5aEeanwOtOCiP3RQ",
@@ -41,7 +41,7 @@ List all available work item types within a project area. The `project-area` par
 > GET `BASE`/types?project-area="SAFe Program"
 
 *Example Response:*
-```
+```javascript
 [
    {
       "id":"defect",
@@ -60,7 +60,7 @@ This will start the core Bulk Mover operation. You can either preview the mappin
 > POST `BASE`/move
 
 *Request / Response* 
-```
+```javascript
 {
    // REQUEST only
    "previewOnly":false, // true if you want to preview the changes, but do not move yet. Setting to false or providing no value will move if possible
@@ -79,7 +79,7 @@ This will start the core Bulk Mover operation. You can either preview the mappin
                "identifier":"/Unassigned/Infrastructure/",
                "displayName":"Infrastructure"
             },
-			...
+	    ...
          ],
          "valueMappings":[ // a list of old values and the affected work items
             {
@@ -109,8 +109,8 @@ This will start the core Bulk Mover operation. You can either preview the mappin
 ```
 
 ## Limitations
-- Custom Attributes: The handling of custom attributes is limited to the features provided by IBM. For anything else than plain text, we cannot ensure proper handling of those.
-- States: State mapping is currently not possible.
+- Mapping required custom attributes only available in the target project area is currently not implemented for all attribute types. The most important and commonly used once are implemented however.
+- Older releases of RTC may not be able to activate the service, see [this](https://github.com/jazz-community/rtc-workitem-bulk-mover-service/issues/11) discussion.
 
 ## Contributing
 Please use the [Issue Tracker](https://github.com/jazz-community/rtc-workitem-bulk-mover-service/issues) of this repository to report issues or suggest enhancements.
