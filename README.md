@@ -20,15 +20,19 @@ List all available project areas.
 
 > GET <root>/project-areas
 
+You can provide a black list of project areas that should not be included in the response (e.g. in case you want the current source area not to be an option for a move). To do that, append the project areas UUID as a parameter, seperate multiple items with a comma:
+
+> GET <root>/project-areas?ignore=_3Ud7oP5aEeanwOtOCiP3RQ,_3Ud7oP5aEeanwOtOCiP3RQ
+
 *Example Response:*
 ```
 [
    {
-      "id":"[UUID _3Ud7oP5aEeanwOtOCiP3RQ]",
+      "id":"_3Ud7oP5aEeanwOtOCiP3RQ",
       "name":"SAFe Portfolio"
    },
    {
-      "id":"[UUID _sFpSwP5aEeanwOtOCiP3RQ]",
+      "id":"_sFpSwP5aEeanwOtOCiP3RQ",
       "name":"SAFe Program"
    }
 ]
