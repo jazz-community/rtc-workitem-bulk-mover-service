@@ -12,7 +12,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import java.util.ArrayList;
 import java.util.List;
 
-final class CategoryHelpers {
+public final class CategoryHelpers {
 
     static AttributeValue getCategory(Object t_val,
                                       IWorkItemServer workItemServer, TeamRawService service, IProgressMonitor monitor) throws TeamRepositoryException {
@@ -48,6 +48,13 @@ final class CategoryHelpers {
             values.add(new AttributeValue(idString, fullPathname));
         }
         return values;
+    }
+
+    public static boolean isArchivedOrUnassigned(Object value, TeamRawService service) throws TeamRepositoryException {
+        IRepositoryItemService itemService = service.getService(IRepositoryItemService.class);
+        ICategoryHandle catHandle = (ICategoryHandle)value;
+        ICategory category = (ICategory) itemService.fetchItem(catHandle, null);
+        return category.isArchived() || category.isUnassigned();
     }
 
     private static boolean isValidCategoryId(String string) {

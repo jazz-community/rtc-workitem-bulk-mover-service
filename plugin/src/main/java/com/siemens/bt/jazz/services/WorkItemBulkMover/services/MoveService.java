@@ -54,6 +54,7 @@ public class MoveService extends AbstractRestService {
         WorkItemMover mover = new WorkItemMover(parentService);
         boolean isMoved = false;
         boolean previewOnly = false;
+        String error = null;
         Collection<AttributeDefinition> moveResults = null;
 
         // read request data
@@ -94,10 +95,17 @@ public class MoveService extends AbstractRestService {
                 IStatus status = mover.MoveAll(preparationResult.getWorkItems());
                 isMoved = status.isOK();
             }
+            if(!isMoved && moveResults.size() == 0) {
+			    error = "The move operation failed, but there is no mapping data available.";
+            }
 		} catch (Exception e) {
             // Inform the user the the items could not be moved
-                responseJson.addProperty("error", e.getMessage());
+            error = e.getMessage();
 		}
+
+		if(error != null) {
+            responseJson.addProperty("error", error);
+        }
 
         // prepare data to be returend
         responseJson.addProperty("successful", isMoved);

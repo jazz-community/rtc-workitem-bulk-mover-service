@@ -9,6 +9,7 @@ import com.ibm.team.repository.service.TeamRawService;
 import com.ibm.team.workitem.common.internal.IAdditionalSaveParameters;
 import com.ibm.team.workitem.common.internal.model.WorkItemAttributes;
 import com.ibm.team.workitem.common.internal.util.EMFHelper;
+import com.ibm.team.workitem.common.model.AttributeTypes;
 import com.ibm.team.workitem.common.model.IAttribute;
 import com.ibm.team.workitem.common.model.IWorkItem;
 import com.ibm.team.workitem.common.model.Identifier;
@@ -17,6 +18,7 @@ import com.ibm.team.workitem.service.IWorkItemServer;
 import com.ibm.team.workitem.service.IWorkItemWrapper;
 import com.ibm.team.workitem.service.internal.WorkItemWrapper;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.AttributeHelpers;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.CategoryHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.WorkItemTypeHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.*;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.operations.BulkMoveOperation;
@@ -75,7 +77,7 @@ public class WorkItemMover {
 
 			if(entry.getSourceWorkItem().getProjectArea().sameItemId(targetArea)
 			        && sourceType.equals(targetType)) {
-			    throw new TeamRepositoryException("No move possible if source and target project area AND source and target work item type are the same");
+			    throw new TeamRepositoryException("No move possible if source and target project area AND source and target work item type (" + targetType + ") are the same");
             }
 
 			WorkItemTypeHelpers.setWorkItemType(entry.getSourceWorkItem(), entry.getTargetWorkItem(), sourceType, targetType, workItemServer, monitor);
@@ -174,12 +176,14 @@ public class WorkItemMover {
 		List<IAttribute> targetAttrs = workItemServer.findAttributes(targetArea, monitor);
 		Collection<String> requiredAttributes = workItemServer.findRequiredAttributes(targetWorkItem, null, monitor);
         List<String> alwaysMap = new ArrayList<String>();
+		List<IAttribute> requiredAttrs = new ArrayList<IAttribute>();
+
 		if(!sourceWorkItem.getWorkItemType().equals(targetWorkItem.getWorkItemType())) {
-            requiredAttributes.add(IWorkItem.STATE_PROPERTY);
+			IAttribute stateAttr = workItemServer.findAttribute(targetWorkItem.getProjectArea(), IWorkItem.STATE_PROPERTY, null);
+			requiredAttrs.add(stateAttr);
             alwaysMap.add(IWorkItem.STATE_PROPERTY);
             alwaysMap.add(IWorkItem.RESOLUTION_PROPERTY);
 		}
-		List<IAttribute> requiredAttrs = new ArrayList<IAttribute>();
 
 		for(IAttribute sourceAttr : sourceAttrs) {
 			if(sourceWorkItem.hasAttribute(sourceAttr)) {
@@ -187,12 +191,16 @@ public class WorkItemMover {
 				Object sourceValue = sourceAttr.getValue(auditSrv, sourceWorkItem, monitor);
 				for(IAttribute targetAttr : targetAttrs) {
 					if(targetWorkItem.hasAttribute(targetAttr)) {
+						boolean eq1 = targetAttr.getIdentifier().equals(sourceAttr.getIdentifier());
+						if(!eq1)
+							continue; // early exit
 						Object targetValue = targetAttr.getValue(auditSrv, targetWorkItem, monitor);
 						boolean isRequired = requiredAttributes.contains(targetAttr.getIdentifier());
-						if(targetAttr.getIdentifier().equals(sourceAttr.getIdentifier())
-								&& (areBothNullButRequired(isRequired, sourceValue, targetValue)
-										|| !areValuesEqual(sourceValue, targetValue))
-								&& !AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier())) {
+						boolean eq2a = areBothNullButRequired(isRequired, sourceValue, targetValue);
+						boolean eq2b = isTargetRequiredButValueUnassigned(isRequired, targetAttr, targetValue);
+						boolean eq2c = !areValuesEqual(sourceValue, targetValue);
+						boolean eq3 = AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier());
+						if(eq1 && (eq2a || eq2b || eq2c) && !eq3) {
 							if(isRequired) {
 								requiredAttributes.remove(targetAttr.getIdentifier());
 								requiredAttrs.add(targetAttr);
@@ -243,6 +251,10 @@ public class WorkItemMover {
                 mapping.addAffectedWorkItem(wi, isRequired);
             }
         }
+	}
+
+	private boolean isTargetRequiredButValueUnassigned(boolean isRequired, IAttribute attribute, Object targetValue) throws TeamRepositoryException {
+		return isRequired && AttributeTypes.CATEGORY.equals(attribute.getAttributeType()) && CategoryHelpers.isArchivedOrUnassigned(targetValue, service);
 	}
 
 	private boolean areBothNullButRequired(boolean isReuqired, Object sourceValue, Object targetValue) {

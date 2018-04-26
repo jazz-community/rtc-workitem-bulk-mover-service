@@ -11,16 +11,18 @@ import java.util.List;
 
 public final class WorkItemTypeHelpers {
 
-    public static void setWorkItemType(IWorkItem sourceWorkItem, IWorkItem targetWorkItem, String odlWorkItemTypeId, String newWorkItemTypeId,
+    public static void setWorkItemType(IWorkItem sourceWorkItem, IWorkItem targetWorkItem, String oldWorkItemTypeId, String newWorkItemTypeId,
                                        IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
-        IProjectAreaHandle sourcePa = sourceWorkItem.getProjectArea();
-        IProjectAreaHandle targetPa = targetWorkItem.getProjectArea();
-        IWorkItemType oldType = workItemServer.findWorkItemType(sourcePa, odlWorkItemTypeId, monitor);
-        IWorkItemType newType = workItemServer.findWorkItemType(targetPa, newWorkItemTypeId, monitor);
-        if(newType != null) {
-            workItemServer.updateWorkItemType(targetWorkItem, newType, oldType, monitor);
-        } else {
-            throw new TeamRepositoryException("Target work item of type '" + newWorkItemTypeId + "' does not exist");
+        if(!oldWorkItemTypeId.equals(newWorkItemTypeId)) {
+            IProjectAreaHandle sourcePa = sourceWorkItem.getProjectArea();
+            IProjectAreaHandle targetPa = targetWorkItem.getProjectArea();
+            IWorkItemType oldType = workItemServer.findWorkItemType(sourcePa, oldWorkItemTypeId, monitor);
+            IWorkItemType newType = workItemServer.findWorkItemType(targetPa, newWorkItemTypeId, monitor);
+            if (newType != null) {
+                workItemServer.updateWorkItemType(targetWorkItem, newType, oldType, monitor);
+            } else {
+                throw new TeamRepositoryException("Target work item of type '" + newWorkItemTypeId + "' does not exist");
+            }
         }
     }
 
