@@ -44,8 +44,8 @@ public final class CategoryHelpers {
                 continue;
             CategoryId id = category.getCategoryId();
             String idString = id.getInternalRepresentation();
-            String fullPathname = workItemServer.resolveHierarchicalName(category, monitor);
-            values.add(new AttributeValue(idString, fullPathname));
+            String name = category.getName();
+            values.add(new AttributeValue(idString, name));
         }
         return values;
     }

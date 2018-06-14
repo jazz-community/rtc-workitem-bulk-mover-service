@@ -1,6 +1,5 @@
 package com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers;
 
-import com.ibm.team.process.common.IDevelopmentLine;
 import com.ibm.team.process.common.IIteration;
 import com.ibm.team.process.common.IIterationHandle;
 import com.ibm.team.process.common.IProjectAreaHandle;
@@ -17,7 +16,6 @@ import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.Attribute
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 final class TargetHelpers {
@@ -49,17 +47,11 @@ final class TargetHelpers {
                                                    IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
         IAuditableServer auditSrv = workItemServer.getAuditableServer();
         List<AttributeValue> values = new ArrayList<AttributeValue>();
-        List<IDevelopmentLine> developmentLines = auditSrv.resolveAuditablesPermissionAware(Arrays.asList((
-                auditSrv.resolveAuditable(pa, ItemProfile.PROJECT_AREA_DEFAULT, monitor)).getDevelopmentLines()), ItemProfile.DEVELOPMENT_LINE_DEFAULT, monitor);
-        if (!developmentLines.isEmpty()) {
-            for (IDevelopmentLine curDevLine : developmentLines) {
-                List<IIteration> iterations = IterationsHelper.findAllIterations(auditSrv, curDevLine.getIterations(), ItemProfile.ITERATION_DEFAULT, false, monitor);
-                for (IIteration curIter : iterations) {
-                    String name = curIter.getName();
-                    String path = IterationsHelper.createIterationPath(curIter, auditSrv, monitor);
-                    values.add(new AttributeValue(path, name));
-                }
-            }
+        List<IIteration> iterations = IterationsHelper.findProjectAreaIterations(auditSrv, pa, ItemProfile.ITERATION_DEFAULT, false, false, monitor);
+        for (IIteration curIteration : iterations) {
+            String name = curIteration.getName();
+            String path = IterationsHelper.createIterationPath(curIteration, auditSrv, monitor);
+            values.add(new AttributeValue(path, name));
         }
         return values;
     }
