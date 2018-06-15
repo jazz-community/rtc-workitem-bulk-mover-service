@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: com.siemens.bt.jazz.services.WorkItemBulkMover
 Bundle-SymbolicName: com.siemens.bt.jazz.services.WorkItemBulkMover;singleton:=true
-Bundle-Version: 1.4.2.qualifier
+Bundle-Version: 1.4.3.qualifier
 Bundle-Vendor: VENDOR
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: 
