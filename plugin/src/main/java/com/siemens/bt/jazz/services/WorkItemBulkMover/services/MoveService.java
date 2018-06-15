@@ -1,9 +1,6 @@
 package com.siemens.bt.jazz.services.WorkItemBulkMover.services;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.repository.service.TeamRawService;
@@ -42,7 +39,7 @@ public class MoveService extends AbstractRestService {
         super(log, request, response, restRequest, parentService);
         this.workItemServer = parentService.getService(IWorkItemServer.class);
         this.monitor = new NullProgressMonitor();
-        this.gson = new Gson();
+        this.gson = new GsonBuilder().serializeNulls().create();
         this.workItemIdCollectionType = new TypeToken<Collection<Integer>>(){}.getType();
         this.attributesCollectionType = new TypeToken<Collection<AttributeDefinition>>(){}.getType();
         this.typeMappingCollectionType = new TypeToken<Collection<TypeMappingEntry>>(){}.getType();
@@ -94,6 +91,9 @@ public class MoveService extends AbstractRestService {
                 // try to move the work items...
                 IStatus status = mover.MoveAll(preparationResult.getWorkItems());
                 isMoved = status.isOK();
+                if(!isMoved) {
+                    error = status.getMessage();
+                }
             }
             if(!isMoved && moveResults.size() == 0) {
 			    error = "The move operation failed, but there is no mapping data available.";
@@ -101,6 +101,9 @@ public class MoveService extends AbstractRestService {
 		} catch (Exception e) {
             // Inform the user the the items could not be moved
             error = e.getMessage();
+            if(error == null) {
+                error = e.toString();
+            }
 		}
 
 		if(error != null) {
