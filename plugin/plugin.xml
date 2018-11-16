@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
-<!-- https://jazz.net/wiki/bin/view/Main/JAFServiceFramework -->
 <plugin>
    <extension
          point="com.ibm.team.repository.common.components">
@@ -23,29 +22,15 @@
          <provides>
              <providedService interface="com.siemens.bt.jazz.services.WorkItemBulkMover.IWorkItemBulkMoverService" />
          </provides>
-         <prerequisites>
-	         <optionalService
-	               interface="com.ibm.team.repository.common.service.IContributorService">
-	         </optionalService>
-	         <optionalService
-                interface="com.ibm.team.workitem.service.IWorkItemServer">
-	         </optionalService>
-             <optionalService
-                     interface="com.ibm.team.process.service.IProcessServerService">
-             </optionalService>
-             <optionalService
-                     interface="com.ibm.team.workitem.common.IWorkItemCommon">
-             </optionalService>
-             <optionalService
-                     interface="com.ibm.team.links.common.service.ILinkService">
-             </optionalService>
-             <optionalService
-                     interface="com.ibm.team.repository.service.IRepositoryItemService">
-             </optionalService>
-             <optionalService
-                 interface="com.ibm.team.repository.common.internal.IContributorRestService">
-             </optionalService>
-         </prerequisites>
+          <prerequisites>
+              <requiredService interface="com.ibm.team.process.service.IProcessServerService"/>
+              <requiredService interface="com.ibm.team.links.common.service.ILinkService"/>
+              <requiredService interface="com.ibm.team.repository.common.service.IContributorService"/>
+              <requiredService interface="com.ibm.team.repository.service.IRepositoryItemService" />
+              <requiredService interface="com.ibm.team.workitem.service.IAuditableServer"/>
+              <requiredService interface="com.ibm.team.workitem.service.IQueryServer" />
+              <requiredService interface="com.ibm.team.workitem.service.IWorkItemServer"/>
+          </prerequisites>
       </serviceProvider>
    </extension>
 </plugin>
