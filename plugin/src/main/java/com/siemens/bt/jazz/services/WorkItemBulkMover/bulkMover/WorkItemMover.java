@@ -266,10 +266,8 @@ public class WorkItemMover {
 	}
 
 	@SuppressWarnings("restriction")
-	public IStatus MoveAll(List<IWorkItem> workItems) throws TeamRepositoryException {
+	public IStatus MoveAll(List<IWorkItem> workItems, Set<String> saveParams) throws TeamRepositoryException {
 		List<IWorkItemWrapper> wrappedWorkItems = new ArrayList<IWorkItemWrapper>();
-		Set<String> saveParams = new HashSet<String>();
-		saveParams.add(IAdditionalSaveParameters.UPDATE_EXTENDED_RICH_TEXT);
 		for(IWorkItem w : workItems) {
 			wrappedWorkItems.add(new WorkItemWrapper(w, null, null, saveParams, Collections.<IAuditable>emptySet()));
 		}

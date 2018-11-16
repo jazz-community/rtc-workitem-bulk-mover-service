@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.repository.service.TeamRawService;
+import com.ibm.team.workitem.common.internal.IAdditionalSaveParameters;
 import com.ibm.team.workitem.common.model.IWorkItem;
 import com.ibm.team.workitem.service.IWorkItemServer;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.WorkItemMover;
@@ -51,12 +52,14 @@ public class MoveService extends AbstractRestService {
         WorkItemMover mover = new WorkItemMover(parentService);
         boolean isMoved = false;
         boolean previewOnly = false;
+        boolean skipEmail = false;
         String error = null;
         Collection<AttributeDefinition> moveResults = null;
 
         // read request data
         JsonObject workItemData = RequestReader.readAsJson(request);
         JsonPrimitive previewPrimitive = workItemData.getAsJsonPrimitive("previewOnly");
+        JsonPrimitive skipEmailPrimitive = workItemData.getAsJsonPrimitive("skipEmail");
         JsonPrimitive targetPA = workItemData.getAsJsonPrimitive("targetProjectArea");
         JsonArray workItemJson = workItemData.getAsJsonArray("workItems");
         JsonArray typeMappingJson = workItemData.getAsJsonArray("typeMapping");
@@ -65,7 +68,10 @@ public class MoveService extends AbstractRestService {
         if(previewPrimitive != null) {
             previewOnly = previewPrimitive.getAsBoolean();
         }
-        // map cient data to model
+        if(skipEmailPrimitive != null) {
+            skipEmail = skipEmailPrimitive.getAsBoolean();
+        }
+        // map client data to model
         Collection<Integer> clientWorkItemList = gson.fromJson(workItemJson, workItemIdCollectionType);
         List<AttributeDefinition> clientMappingDefinitions = gson.fromJson(attributesJson, attributesCollectionType);
         Collection<TypeMappingEntry> typeMappingDefinitions = gson.fromJson(typeMappingJson, typeMappingCollectionType);
@@ -89,7 +95,12 @@ public class MoveService extends AbstractRestService {
 
 			if(!previewOnly) {
                 // try to move the work items...
-                IStatus status = mover.MoveAll(preparationResult.getWorkItems());
+                Set<String> saveParams = new HashSet<String>();
+                saveParams.add(IAdditionalSaveParameters.UPDATE_EXTENDED_RICH_TEXT);
+                if(skipEmail) {
+                    saveParams.add(IAdditionalSaveParameters.SKIP_MAIL);
+                }
+                IStatus status = mover.MoveAll(preparationResult.getWorkItems(), saveParams);
                 isMoved = status.isOK();
                 if(!isMoved) {
                     error = status.getMessage();
