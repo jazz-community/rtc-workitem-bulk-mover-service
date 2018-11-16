@@ -15,6 +15,15 @@ You'll see the term `BASE` within the following API doc a few times. It represen
 
 > https://localhost:7443/jazz/service/com.siemens.bt.jazz.services.WorkItemBulkMover.IWorkItemBulkMoverService
 
+### Get Service Infos
+List the current service version.
+> GET `BASE`/info
+
+*Example Response:*
+```javascript
+{"version":"1.4.3.201809222050"}
+```
+
 ### List Project Areas
 List all available project areas a user has access to.
 > GET `BASE`/project-areas
