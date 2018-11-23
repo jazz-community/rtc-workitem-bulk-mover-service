@@ -38,10 +38,16 @@ public class AttributeDefinition {
 		valueMappings.add(mapping);
 	}
 
-	public MappingDefinition getMapping(String oldValueIdentifier) {
-		for(MappingDefinition map : valueMappings) {
-			if(oldValueIdentifier.equals(map.getOldValue().getIdentifier())) {
-				return map;
+	public MappingDefinition getMapping(AttributeValue oldValueIdentifier) {
+		if(oldValueIdentifier != null) {
+			for (MappingDefinition map : valueMappings) {
+				if(map.getOldValue() != null) {
+					if (!isPrimitive && oldValueIdentifier.getIdentifier() != null && oldValueIdentifier.getIdentifier().equals(map.getOldValue().getIdentifier())) {
+						return map;
+					} else if (isPrimitive && oldValueIdentifier.getDisplayName() != null && oldValueIdentifier.getDisplayName().equals(map.getOldValue().getDisplayName())) {
+						return map;
+					}
+				}
 			}
 		}
 		return null;

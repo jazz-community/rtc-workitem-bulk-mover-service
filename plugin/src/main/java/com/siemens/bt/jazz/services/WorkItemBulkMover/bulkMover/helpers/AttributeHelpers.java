@@ -1,17 +1,24 @@
 package com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers;
 
+import com.google.gson.JsonPrimitive;
 import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.repository.common.IItem;
 import com.ibm.team.repository.common.TeamRepositoryException;
 import com.ibm.team.repository.service.TeamRawService;
 import com.ibm.team.workitem.common.internal.model.WorkItemAttributes;
-import com.ibm.team.workitem.common.model.*;
+import com.ibm.team.workitem.common.model.AttributeTypes;
+import com.ibm.team.workitem.common.model.IAttribute;
+import com.ibm.team.workitem.common.model.IWorkItem;
+import com.ibm.team.workitem.common.model.Identifier;
 import com.ibm.team.workitem.service.IAuditableServer;
 import com.ibm.team.workitem.service.IWorkItemServer;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.AttributeValue;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public final class AttributeHelpers {
     private TeamRawService teamRawService;
@@ -57,7 +64,7 @@ public final class AttributeHelpers {
     ));
 
     @SuppressWarnings("restriction")
-    public void setAttributeForWorkItem(IWorkItem targetWorkItem, String attributeId, String valueId) throws TeamRepositoryException {
+    public void setAttributeForWorkItem(IWorkItem targetWorkItem, String attributeId, JsonPrimitive valueId) throws TeamRepositoryException {
         IProjectAreaHandle paHandle = targetWorkItem.getProjectArea();
         IAttribute attribute = workItemServer.findAttribute(paHandle, attributeId, monitor);
         Identifier<IAttribute> identifier = WorkItemAttributes.getPropertyIdentifier(attribute.getIdentifier());
@@ -65,17 +72,17 @@ public final class AttributeHelpers {
 
         if(valueId != null) {
             if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
-                ResolutionHelpers.setResolution(targetWorkItem, valueId, workItemServer, monitor);
+                ResolutionHelpers.setResolution(targetWorkItem, valueId.getAsString(), workItemServer, monitor);
             } else if (WorkItemAttributes.STATE.equals(identifier)) {
-                StateHelpers.setState(targetWorkItem, valueId, workItemServer, monitor);
+                StateHelpers.setState(targetWorkItem, valueId.getAsString(), workItemServer, monitor);
             } else if (AttributeTypes.CATEGORY.equals(type)) {
-                CategoryHelpers.setCategory(targetWorkItem, attribute, valueId, workItemServer, monitor);
+                CategoryHelpers.setCategory(targetWorkItem, attribute, valueId.getAsString(), workItemServer, monitor);
             } else if (AttributeTypes.ITERATION.equals(type)) {
-                TargetHelpers.setTarget(targetWorkItem, attribute, valueId, workItemServer);
+                TargetHelpers.setTarget(targetWorkItem, attribute, valueId.getAsString(), workItemServer);
             } else if (AttributeTypes.DELIVERABLE.equals(type)) {
-                FoundInHelpers.setFoundIn(targetWorkItem, attribute, valueId, workItemServer, monitor);
+                FoundInHelpers.setFoundIn(targetWorkItem, attribute, valueId.getAsString(), workItemServer, monitor);
             } else if(EnumerationHelpers.isValidEnumerationLiteral(attribute)) {
-                EnumerationHelpers.setEnumerationLiteral(targetWorkItem, attributeId, valueId, workItemServer, monitor);
+                EnumerationHelpers.setEnumerationLiteral(targetWorkItem, attributeId, valueId.getAsString(), workItemServer, monitor);
             } else if (isPrimitiveCustomAttributeType(attribute)) {
                 PrimitiveHelpers.setPrimitive(targetWorkItem, attribute, valueId);
             }
@@ -85,7 +92,8 @@ public final class AttributeHelpers {
     @SuppressWarnings("restriction")
     public AttributeValue getCurrentValueRepresentation(IAttribute attribute, IWorkItem workItem) throws TeamRepositoryException {
         IAuditableServer auditSrv = workItemServer.getAuditableServer();
-        AttributeValue value = new AttributeValue("", "");
+        JsonPrimitive nullPrim = null;
+        AttributeValue value = new AttributeValue(attribute.getIdentifier(), nullPrim);
 
         if(attribute != null) {
             String type = attribute.getAttributeType();

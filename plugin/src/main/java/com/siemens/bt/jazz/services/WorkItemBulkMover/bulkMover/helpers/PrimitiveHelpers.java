@@ -1,64 +1,64 @@
 package com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers;
 
+import com.google.gson.JsonPrimitive;
+import com.ibm.team.foundation.common.text.XMLString;
 import com.ibm.team.repository.common.TeamRepositoryException;
-import com.ibm.team.workitem.common.internal.model.NumericAttributeType;
-import com.ibm.team.workitem.common.internal.model.TimestampAttributeType;
 import com.ibm.team.workitem.common.model.AttributeType;
 import com.ibm.team.workitem.common.model.AttributeTypes;
 import com.ibm.team.workitem.common.model.IAttribute;
 import com.ibm.team.workitem.common.model.IWorkItem;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.AttributeValue;
 
-import java.math.BigDecimal;
+import java.sql.Timestamp;
 
-final class PrimitiveHelpers {
+public final class PrimitiveHelpers {
 
-    static AttributeValue getPrimitive(IWorkItem workItem, IAttribute attribute) {
+    public static AttributeValue getPrimitive(IWorkItem workItem, IAttribute attribute) {
         Object val = workItem.getValue(attribute);
-        return new AttributeValue(attribute.getIdentifier(), val.toString());
+        JsonPrimitive primitivo;
+        if(val == null) {
+            primitivo = null;
+        } else if(val instanceof Boolean) {
+            primitivo = new JsonPrimitive((Boolean) val);
+        } else if(val instanceof Number) {
+            primitivo = new JsonPrimitive((Number) val);
+        } else if(val instanceof String) {
+            if(AttributeTypes.HTML_TYPES.contains(attribute.getAttributeType())) {
+                val = XMLString.createFromXMLText((String) val).getPlainText();
+            }
+            primitivo = new JsonPrimitive((String) val);
+        } else {
+            primitivo = new JsonPrimitive(val.toString());
+        }
+        return new AttributeValue(attribute.getIdentifier(), primitivo);
     }
 
-    static void setPrimitive(IWorkItem workItem, IAttribute attribute, String value) throws TeamRepositoryException {
+    static void setPrimitive(IWorkItem workItem, IAttribute attribute, JsonPrimitive value) throws TeamRepositoryException {
         AttributeType type = AttributeTypes.getAttributeType(attribute.getAttributeType());
-
         Object oValue;
-        if(type instanceof NumericAttributeType || AttributeTypes.NUMBER_TYPES.contains(attribute.getAttributeType())) {
-            try {
-                oValue = toObject(type.getInstanceType(), value);
-            } catch (NumberFormatException ex) {
-                throw new TeamRepositoryException("Unable to set value \"" + value + "\" for attribute '" + attribute.getDisplayName() + "'. Make sure that your input matches.");
+        if(type.getInstanceType() == Timestamp.class) {
+            oValue = Timestamp.valueOf(value.getAsString());
+        } else if(value.isBoolean()) {
+            oValue = value.getAsBoolean();
+        } else if(value.isNumber()) {
+            Class instanceType = type.getInstanceType();
+            if(instanceType == Integer.class) {
+                oValue = value.getAsInt();
+            } else if(instanceType == Long.class) {
+                oValue = value.getAsLong();
+            } else {
+                oValue = value.getAsNumber();
             }
-        } else if (type instanceof TimestampAttributeType) {
-            throw new TeamRepositoryException("Datetime conversion not implemented");
+        } else if(value.isString()) {
+            oValue = value.getAsString();
         } else {
-            // TODO: support other types here in 'else if' clauses
-            oValue = value;
+            oValue = value.toString();
         }
 
         try {
             workItem.setValue(attribute, oValue);
         } catch (Exception eee) {
-            throw new TeamRepositoryException(eee.getMessage());
+            throw new TeamRepositoryException("Unable to set value \"" + value + "\" for attribute '" + attribute.getDisplayName() + "'. Make sure that your input matches.");
         }
-    }
-
-    private static Object toObject(Class clazz, String value) {
-        if(Boolean.class == clazz || Boolean.TYPE == clazz)
-            return Boolean.parseBoolean(value);
-        if(Byte.class == clazz)
-            return Byte.parseByte(value);
-        if(Short.class == clazz)
-            return Short.parseShort(value);
-        if(Integer.class == clazz)
-            return Integer.parseInt(value);
-        if(Long.class == clazz)
-            return Long.parseLong(value);
-        if(Float.class == clazz)
-            return Float.parseFloat(value);
-        if(Double.class == clazz)
-            return Double.parseDouble(value);
-        if(BigDecimal.class == clazz)
-            return new BigDecimal(value);
-        return value;
     }
 }

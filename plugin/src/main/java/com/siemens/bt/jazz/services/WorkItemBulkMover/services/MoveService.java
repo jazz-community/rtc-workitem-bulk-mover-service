@@ -90,7 +90,7 @@ public class MoveService extends AbstractRestService {
             // prepare movement and track fields to be changed
 			MovePreparationResult preparationResult = mover.PrepareMove(items, targetArea, clientMappingDefinitions, typeMap);
 
-			// store attribute based ovservations to be able to return this information to the end user
+			// store attribute based observations to be able to return this information to the end user
 			moveResults = preparationResult.getAttributeDefinitions();
 
 			if(!previewOnly) {

@@ -1,5 +1,7 @@
 package com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.rtc.models.WorkItem;
 
 import java.util.ArrayList;
@@ -9,21 +11,21 @@ public class MappingDefinition {
 	private AttributeValue oldValue;
 	private List<AffectedWorkItem> affectedWorkItems;
     private List<AttributeValue> allowedValues;
-    private String chosen;
+    private JsonElement chosen;
     private String error;
 	private boolean showDetails = false;
 
-	public MappingDefinition(AttributeValue oldValue, AffectedWorkItem affectedWorkItem, boolean isPrimitive) {
+	public MappingDefinition(AttributeValue oldValue, AffectedWorkItem affectedWorkItem) {
 	    this.oldValue = oldValue;
         this.allowedValues = new ArrayList<AttributeValue>();
         this.affectedWorkItems = new ArrayList<AffectedWorkItem>();
 	    this.affectedWorkItems.add(affectedWorkItem);
 	    this.error = null;
-        this.chosen = "";
+        this.chosen = null;
     }
 
-    public void addAffectedWorkItem(WorkItem wi, boolean isRequired) {
-	    this.affectedWorkItems.add(new AffectedWorkItem(wi, isRequired));
+    public void addAffectedWorkItem(AffectedWorkItem affectedWorkItem) {
+	    this.affectedWorkItems.add(affectedWorkItem);
     }
 
     public List<AttributeValue> getAttributeValues() {
@@ -44,5 +46,9 @@ public class MappingDefinition {
 
     public void setError(String errorMsg) {
 	    this.error = errorMsg;
+    }
+
+    public void setChosen(JsonPrimitive chosen) {
+        this.chosen = chosen;
     }
 }

@@ -1,18 +1,16 @@
 package com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover;
 
+import com.google.gson.JsonPrimitive;
 import com.ibm.team.process.common.IProjectArea;
 import com.ibm.team.process.common.IProjectAreaHandle;
 import com.ibm.team.repository.common.IAuditable;
 import com.ibm.team.repository.common.TeamRepositoryException;
 import com.ibm.team.repository.service.IRepositoryItemService;
 import com.ibm.team.repository.service.TeamRawService;
-import com.ibm.team.workitem.common.internal.IAdditionalSaveParameters;
-import com.ibm.team.workitem.common.internal.model.WorkItemAttributes;
 import com.ibm.team.workitem.common.internal.util.EMFHelper;
 import com.ibm.team.workitem.common.model.AttributeTypes;
 import com.ibm.team.workitem.common.model.IAttribute;
 import com.ibm.team.workitem.common.model.IWorkItem;
-import com.ibm.team.workitem.common.model.Identifier;
 import com.ibm.team.workitem.service.IAuditableServer;
 import com.ibm.team.workitem.service.IWorkItemServer;
 import com.ibm.team.workitem.service.IWorkItemWrapper;
@@ -104,15 +102,15 @@ public class WorkItemMover {
 	private void applyMappingsToWorkItems(List<WorkItemMoveMapper> mappedWorkItems,
 			Collection<AttributeDefinition> mappingDefinitions) throws TeamRepositoryException {
         AttributeHelpers attributeHelpers = new AttributeHelpers(service, workItemServer, monitor);
-		Map<Integer, HashMap<String, String>> attributeMap = getAttributesByWorkItem(mappingDefinitions);
+		Map<Integer, HashMap<String, JsonPrimitive>> attributeMap = getAttributesByWorkItem(mappingDefinitions);
 
 		for(WorkItemMoveMapper mappedWorkItem : mappedWorkItems) {
 			IWorkItem sourceWorkItem = mappedWorkItem.getSourceWorkItem();
 			IWorkItem targetWorkItem = mappedWorkItem.getTargetWorkItem();
-			HashMap<String, String> attributes = attributeMap.get(sourceWorkItem.getId());
+			HashMap<String, JsonPrimitive> attributes = attributeMap.get(sourceWorkItem.getId());
 
 			if(attributes != null) {
-				for(Entry<String, String> attribute : attributes.entrySet()) {
+				for(Entry<String, JsonPrimitive> attribute : attributes.entrySet()) {
                     attributeHelpers.setAttributeForWorkItem(targetWorkItem, attribute.getKey(), attribute.getValue());
 				}
 			}
@@ -125,8 +123,8 @@ public class WorkItemMover {
      * @param mappingDefinitions the mapping definition provided by the user
      * @return attribute definitions by work item ID
      */
-	private Map<Integer, HashMap<String, String>> getAttributesByWorkItem(Collection<AttributeDefinition> mappingDefinitions) {
-		Map<Integer, HashMap<String, String>> attributes = new HashMap<Integer, HashMap<String, String>>();
+	private Map<Integer, HashMap<String, JsonPrimitive>> getAttributesByWorkItem(Collection<AttributeDefinition> mappingDefinitions) {
+		Map<Integer, HashMap<String, JsonPrimitive>> attributes = new HashMap<Integer, HashMap<String, JsonPrimitive>>();
 
 		for(AttributeDefinition mapping : mappingDefinitions) {
 			String attributeId = mapping.getIdentifier();
@@ -135,13 +133,13 @@ public class WorkItemMover {
 				for(AffectedWorkItem aWi : entry.getAffectedWorkItems()) {
 
 					int workItem = aWi.getWorkItem().getId();
-					String valueId = aWi.getMappedIdentifier();
+					JsonPrimitive valueId = aWi.getMappedIdentifier();
 					if(valueId != null) {
 						if (attributes.containsKey(workItem)) {
-							HashMap<String, String> workItemAttributes = attributes.get(workItem);
+							HashMap<String, JsonPrimitive> workItemAttributes = attributes.get(workItem);
 							workItemAttributes.put(attributeId, valueId);
 						} else {
-							HashMap<String, String> map = new HashMap<String, String>();
+							HashMap<String, JsonPrimitive> map = new HashMap<String, JsonPrimitive>();
 							map.put(attributeId, valueId);
 							attributes.put(workItem, map);
 						}
@@ -159,10 +157,26 @@ public class WorkItemMover {
 			addWorkItemToAttributeDefinitions(attributeDefinitions, mappedWorkItem, itemService);
 		}
 
+		aggregateChosen(attributeDefinitions);
+
 		return attributeDefinitions;
 	}
 
-	private void addWorkItemToAttributeDefinitions(List<AttributeDefinition> attributeDefinitions, WorkItemMoveMapper mappedWorkItem, IRepositoryItemService itemService) throws TeamRepositoryException {
+    private void aggregateChosen(List<AttributeDefinition> attributeDefinitions) {
+        for(AttributeDefinition mapping : attributeDefinitions) {
+            for(MappingDefinition entry : mapping.getMappingDefinitions()) {
+                HashSet<JsonPrimitive> allTheSame = new HashSet<JsonPrimitive>();
+                for(AffectedWorkItem afwi : entry.getAffectedWorkItems()) {
+                    allTheSame.add(afwi.getMappedIdentifier());
+                }
+                if(allTheSame.size() == 1) {
+                    entry.setChosen(entry.getAffectedWorkItems().get(0).getMappedIdentifier());
+                }
+            }
+        }
+    }
+
+    private void addWorkItemToAttributeDefinitions(List<AttributeDefinition> attributeDefinitions, WorkItemMoveMapper mappedWorkItem, IRepositoryItemService itemService) throws TeamRepositoryException {
 		IAuditableServer auditSrv = workItemServer.getAuditableServer();
 		AttributeHelpers attributeHelpers = new AttributeHelpers(service, workItemServer, monitor);
 
@@ -200,7 +214,7 @@ public class WorkItemMover {
 						boolean eq2b = isTargetRequiredButValueUnassigned(isRequired, targetAttr, targetValue);
 						boolean eq2c = !areValuesEqual(sourceValue, targetValue);
 						boolean eq3 = AttributeHelpers.IGNORED_ATTRIBUTES.contains(targetAttr.getIdentifier());
-						if(eq1 && (eq2a || eq2b || eq2c) && !eq3) {
+						if((eq2a || eq2b || eq2c) && !eq3) {
 							if(isRequired) {
 								requiredAttributes.remove(targetAttr.getIdentifier());
 								requiredAttrs.add(targetAttr);
@@ -232,23 +246,29 @@ public class WorkItemMover {
         }
 		AttributeDefinition definition = attributeDefinitions.get(idx);
 		AttributeValue oldAttributeValue = attributeHelpers.getCurrentValueRepresentation(sourceAttr, sourceWorkItem);
-		MappingDefinition mapping = definition.getMapping(oldAttributeValue.getIdentifier());
+		MappingDefinition mapping = definition.getMapping(oldAttributeValue);
 		WorkItem wi = new WorkItem(sourceWorkItem.getId(), sourceWorkItem.getHTMLSummary().getPlainText(), null);
+		AffectedWorkItem affectedWi;
+		if(isPrimitive) {
+		    affectedWi = new AffectedWorkItem(wi, isRequired, oldAttributeValue.getDisplayName());
+        } else {
+            affectedWi = new AffectedWorkItem(wi, isRequired);
+        }
 		if(mapping == null) {
             List<AttributeValue> val = attributeHelpers.getAvailableOptionsPresentations(targetAttr, targetWorkItem);
 			MappingDefinition def = new MappingDefinition(
-					oldAttributeValue, new AffectedWorkItem(wi, isRequired), isPrimitive);
+					oldAttributeValue, affectedWi);
 			definition.addValueMapping(def);
-            if(val != null && val.size() > 0) {
+            if(!isPrimitive && val != null && val.size() > 0) {
                 def.addAllowedValues(val);
-            } else {
+            } else if(!isPrimitive) {
             	def.setError("No items available!");
 			}
         } else {
             List<AffectedWorkItem> mappings = mapping.getAffectedWorkItems();
-            int wiIdx = mappings.indexOf(new AffectedWorkItem(wi, isRequired));
+            int wiIdx = mappings.indexOf(affectedWi);
             if(wiIdx < 0) {
-                mapping.addAffectedWorkItem(wi, isRequired);
+                mapping.addAffectedWorkItem(affectedWi);
             }
         }
 	}
