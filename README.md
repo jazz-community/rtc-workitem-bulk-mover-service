@@ -1,4 +1,6 @@
 # Work Item Bulk Mover Service
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjazz-community%2Frtc-workitem-bulk-mover-service.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjazz-community%2Frtc-workitem-bulk-mover-service?ref=badge_shield)
+
 While RTC supports to move a single Work Item from one project area to another, it lacks the capability of doing so for a bunch of Work Items at once.
 
 This project contains the RTC web service extension only. It does not provide a user interface. The user interface can be found within the [Bulk Mover Plug-in](https://github.com/jazz-community/rtc-workitem-bulk-mover-ui) project. It provides a user interface to intract with this service.
@@ -129,3 +131,6 @@ For general contribution guidelines, please refer to [CONTRIBUTING.md](https://g
 ## Licensing
 Copyright (c) Siemens AG. All rights reserved.<br>
 Licensed under the [MIT](LICENSE) License.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjazz-community%2Frtc-workitem-bulk-mover-service.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjazz-community%2Frtc-workitem-bulk-mover-service?ref=badge_large)
