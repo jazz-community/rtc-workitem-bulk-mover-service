@@ -95,27 +95,25 @@ public final class AttributeHelpers {
         JsonPrimitive nullPrim = null;
         AttributeValue value = new AttributeValue(attribute.getIdentifier(), nullPrim);
 
-        if(attribute != null) {
-            String type = attribute.getAttributeType();
-            Object attributeValue = attribute.getValue(auditSrv, workItem, monitor);
-            Identifier<IAttribute> identifier = WorkItemAttributes.getPropertyIdentifier(attribute.getIdentifier());
+        String type = attribute.getAttributeType();
+        Object attributeValue = attribute.getValue(auditSrv, workItem, monitor);
+        Identifier<IAttribute> identifier = WorkItemAttributes.getPropertyIdentifier(attribute.getIdentifier());
 
-            if (attributeValue != null) {
-                if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
-                    value = ResolutionHelpers.getResolution(attributeValue, workItem, workItemServer, monitor);
-                } else if (WorkItemAttributes.STATE.equals(identifier)) {
-                    value = StateHelpers.getState(attributeValue, workItem, workItemServer, monitor);
-                } else if (AttributeTypes.CATEGORY.equals(type)) {
-                    value = CategoryHelpers.getCategory(attributeValue, workItemServer, teamRawService, monitor);
-                } else if (AttributeTypes.ITERATION.equals(type)) {
-                    value = TargetHelpers.getTarget(attributeValue, auditSrv, teamRawService, monitor);
-                } else if (AttributeTypes.DELIVERABLE.equals(type)) {
-                    value = FoundInHelpers.getFoundIn(attributeValue, teamRawService);
-                } else if (EnumerationHelpers.isValidEnumerationLiteral(attribute)) {
-                    value = EnumerationHelpers.getEnumerationLiteral(attribute, attributeValue, workItemServer, monitor);
-                } else if (isPrimitiveCustomAttributeType(attribute)) {
-                    value = PrimitiveHelpers.getPrimitive(workItem, attribute);
-                }
+        if (attributeValue != null) {
+            if (WorkItemAttributes.RESOLUTION.equals(identifier)) {
+                value = ResolutionHelpers.getResolution(attributeValue, workItem, workItemServer, monitor);
+            } else if (WorkItemAttributes.STATE.equals(identifier)) {
+                value = StateHelpers.getState(attributeValue, workItem, workItemServer, monitor);
+            } else if (AttributeTypes.CATEGORY.equals(type)) {
+                value = CategoryHelpers.getCategory(attributeValue, workItemServer, teamRawService, monitor);
+            } else if (AttributeTypes.ITERATION.equals(type)) {
+                value = TargetHelpers.getTarget(attributeValue, auditSrv, teamRawService, monitor);
+            } else if (AttributeTypes.DELIVERABLE.equals(type)) {
+                value = FoundInHelpers.getFoundIn(attributeValue, teamRawService);
+            } else if (EnumerationHelpers.isValidEnumerationLiteral(attribute)) {
+                value = EnumerationHelpers.getEnumerationLiteral(attribute, attributeValue, workItemServer, monitor);
+            } else if (isPrimitiveCustomAttributeType(attribute)) {
+                value = PrimitiveHelpers.getPrimitive(workItem, attribute);
             }
         }
         return value;

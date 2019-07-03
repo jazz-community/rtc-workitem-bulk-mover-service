@@ -39,6 +39,7 @@ final class StateHelpers {
         for(Identifier<IState> state : allWorkflowStates) {
             String id = state.getStringIdentifier();
             if(id.equals(stateId)) {
+                //noinspection deprecation
                 workItem.setState2(state);
             }
         }

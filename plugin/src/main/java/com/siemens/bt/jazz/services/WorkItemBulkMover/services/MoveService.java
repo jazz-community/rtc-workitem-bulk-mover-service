@@ -13,8 +13,9 @@ import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.MovePrepa
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.TypeMappingEntry;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.ProjectAreaHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.WorkItemHelpers;
-import com.siemens.bt.jazz.services.base.rest.AbstractRestService;
-import com.siemens.bt.jazz.services.base.rest.RestRequest;
+import com.siemens.bt.jazz.services.base.rest.parameters.PathParameters;
+import com.siemens.bt.jazz.services.base.rest.parameters.RestRequest;
+import com.siemens.bt.jazz.services.base.rest.service.AbstractRestService;
 import com.siemens.bt.jazz.services.base.utils.RequestReader;
 import org.apache.commons.logging.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -36,8 +37,9 @@ public class MoveService extends AbstractRestService {
     private Type typeMappingCollectionType;
     private Type resultsType;
 
-    public MoveService(Log log, HttpServletRequest request, HttpServletResponse response, RestRequest restRequest, TeamRawService parentService) {
-        super(log, request, response, restRequest, parentService);
+    public MoveService(Log log, HttpServletRequest request, HttpServletResponse response,
+                       RestRequest restRequest, TeamRawService parentService, PathParameters pathParameters) {
+        super(log, request, response, restRequest, parentService, pathParameters);
         this.workItemServer = parentService.getService(IWorkItemServer.class);
         this.monitor = new NullProgressMonitor();
         this.gson = new GsonBuilder().serializeNulls().create();
@@ -52,7 +54,8 @@ public class MoveService extends AbstractRestService {
         WorkItemMover mover = new WorkItemMover(parentService);
         boolean isMoved = false;
         boolean previewOnly = false;
-        boolean skipEmail = false;
+        boolean skipEmail = false; // 'false' to ensure backward compatibility
+        boolean removeRank = false; // 'false' to ensure backward compatibility
         String error = null;
         Collection<AttributeDefinition> moveResults = null;
 
@@ -60,6 +63,7 @@ public class MoveService extends AbstractRestService {
         JsonObject workItemData = RequestReader.readAsJson(request);
         JsonPrimitive previewPrimitive = workItemData.getAsJsonPrimitive("previewOnly");
         JsonPrimitive skipEmailPrimitive = workItemData.getAsJsonPrimitive("skipEmail");
+        JsonPrimitive removeRankPrimitive = workItemData.getAsJsonPrimitive("removeRank");
         JsonPrimitive targetPA = workItemData.getAsJsonPrimitive("targetProjectArea");
         JsonArray workItemJson = workItemData.getAsJsonArray("workItems");
         JsonArray typeMappingJson = workItemData.getAsJsonArray("typeMapping");
@@ -70,6 +74,9 @@ public class MoveService extends AbstractRestService {
         }
         if(skipEmailPrimitive != null) {
             skipEmail = skipEmailPrimitive.getAsBoolean();
+        }
+        if(removeRankPrimitive != null) {
+            removeRank = removeRankPrimitive.getAsBoolean();
         }
         // map client data to model
         Collection<Integer> clientWorkItemList = gson.fromJson(workItemJson, workItemIdCollectionType);
@@ -88,7 +95,7 @@ public class MoveService extends AbstractRestService {
             IProjectAreaHandle targetArea = ProjectAreaHelpers.getProjectArea(targetPA.getAsString(), parentService);
 
             // prepare movement and track fields to be changed
-			MovePreparationResult preparationResult = mover.PrepareMove(items, targetArea, clientMappingDefinitions, typeMap);
+			MovePreparationResult preparationResult = mover.PrepareMove(items, targetArea, clientMappingDefinitions, typeMap, removeRank);
 
 			// store attribute based observations to be able to return this information to the end user
 			moveResults = preparationResult.getAttributeDefinitions();

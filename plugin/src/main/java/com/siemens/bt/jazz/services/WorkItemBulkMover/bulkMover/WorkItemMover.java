@@ -17,6 +17,7 @@ import com.ibm.team.workitem.service.IWorkItemWrapper;
 import com.ibm.team.workitem.service.internal.WorkItemWrapper;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.AttributeHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.CategoryHelpers;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.RankHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.WorkItemTypeHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.*;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.operations.BulkMoveOperation;
@@ -47,12 +48,12 @@ public class WorkItemMover {
      * @throws TeamRepositoryException if anything with RTC goes wrong
      */
 	@SuppressWarnings("restriction")
-	public MovePreparationResult PrepareMove(List<IWorkItem> sourceWorkItems, IProjectAreaHandle targetArea, List<AttributeDefinition> mappingDefinitions, Map<String, String> typeMap) throws TeamRepositoryException {
+	public MovePreparationResult PrepareMove(List<IWorkItem> sourceWorkItems, IProjectAreaHandle targetArea, List<AttributeDefinition> mappingDefinitions, Map<String, String> typeMap, boolean removeRank) throws TeamRepositoryException {
 		// run the bulk movement operation
 		BulkMoveOperation oper = new BulkMoveOperation(targetArea, service);
 		oper.run(sourceWorkItems, workItemServer, monitor);
 
-		// get the workitems involved into the move operation
+		// get the work items involved into the move operation
 		List<WorkItemMoveMapper> workItems = oper.getMappedWorkItems();
 		if(workItems.size() < sourceWorkItems.size()) {
 			List<Integer> mappedIds = new ArrayList<Integer>();
@@ -79,6 +80,10 @@ public class WorkItemMover {
             }
 
 			WorkItemTypeHelpers.setWorkItemType(entry.getSourceWorkItem(), entry.getTargetWorkItem(), sourceType, targetType, workItemServer, monitor);
+
+			if(removeRank) {
+				RankHelpers.unsetRank(entry.getTargetWorkItem(), workItemServer);
+			}
 		}
 
 		if(mappingDefinitions != null && mappingDefinitions.size() > 0) {
@@ -277,8 +282,8 @@ public class WorkItemMover {
 		return isRequired && AttributeTypes.CATEGORY.equals(attribute.getAttributeType()) && CategoryHelpers.isArchivedOrUnassigned(targetValue, service);
 	}
 
-	private boolean areBothNullButRequired(boolean isReuqired, Object sourceValue, Object targetValue) {
-		return sourceValue == null && targetValue == null && isReuqired;
+	private boolean areBothNullButRequired(boolean isRequired, Object sourceValue, Object targetValue) {
+		return sourceValue == null && targetValue == null && isRequired;
 	}
 
 	private boolean areValuesEqual(Object sourceValue, Object targetValue) {

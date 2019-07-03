@@ -19,6 +19,7 @@ final class EnumerationHelpers {
 
     static AttributeValue getEnumerationLiteral(IAttribute attribute, Object t_val,
                                                 IWorkItemServer workItemServer, IProgressMonitor monitor) throws TeamRepositoryException {
+        //noinspection unchecked
         Identifier<? extends ILiteral> lit = (Identifier<? extends ILiteral>)t_val;
         IEnumeration<? extends ILiteral> enumeration = workItemServer.resolveEnumeration(attribute, monitor);
         List<? extends ILiteral> list = enumeration.getEnumerationLiterals(false);

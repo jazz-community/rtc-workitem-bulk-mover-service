@@ -11,9 +11,9 @@ import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.Attribute
 
 import java.sql.Timestamp;
 
-public final class PrimitiveHelpers {
+final class PrimitiveHelpers {
 
-    public static AttributeValue getPrimitive(IWorkItem workItem, IAttribute attribute) {
+    static AttributeValue getPrimitive(IWorkItem workItem, IAttribute attribute) {
         Object val = workItem.getValue(attribute);
         JsonPrimitive primitivo;
         if(val == null) {

@@ -4,12 +4,12 @@
 
     <groupId>com.siemens.bt.jazz.services.WorkItemBulkMover</groupId>
 	<artifactId>com.siemens.bt.jazz.services.WorkItemBulkMover.parent</artifactId>
-    <version>1.5.0-SNAPSHOT</version>
+    <version>1.5.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <tycho-version>1.0.0</tycho-version>
+        <tycho-version>1.4.0</tycho-version>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
 	</properties>
@@ -24,12 +24,12 @@
 		<dependency>
 			<groupId>com.siemens.bt.jazz.services.base</groupId>
 			<artifactId>com.siemens.bt.jazz.services.base</artifactId>
-			<version>2.0.1-SNAPSHOT</version>
+			<version>3.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.7</version>
+			<version>2.8.5</version>
 		</dependency>
 	</dependencies>
 
@@ -45,7 +45,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.1</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies-init</id>
@@ -72,7 +72,7 @@
                 <configuration>
                     <!-- In some development environments / xsd validators, this section will pop up as an error. -->
                     <!-- You can safely ignore it. In case it's too annoying, turn of validation for this pom. -->
-                    <!-- The tradeoff is having warnings during build, and platform dependent osgi bundles -->
+                    <!-- The trade off is having warnings during build, and platform dependent osgi bundles -->
                     <environments>
                         <environment>
                             <os>linux</os>
