@@ -3,6 +3,7 @@ package com.siemens.bt.jazz.services.WorkItemBulkMover.services;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.ibm.team.process.common.IProjectAreaHandle;
+import com.ibm.team.repository.common.TeamRepositoryException;
 import com.ibm.team.repository.service.TeamRawService;
 import com.ibm.team.workitem.common.internal.IAdditionalSaveParameters;
 import com.ibm.team.workitem.common.model.IWorkItem;
@@ -13,8 +14,8 @@ import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.MovePrepa
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.TypeMappingEntry;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.ProjectAreaHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.WorkItemHelpers;
+import com.siemens.bt.jazz.services.base.configuration.Configuration;
 import com.siemens.bt.jazz.services.base.rest.parameters.PathParameters;
-import com.siemens.bt.jazz.services.base.rest.parameters.RestRequest;
 import com.siemens.bt.jazz.services.base.rest.service.AbstractRestService;
 import com.siemens.bt.jazz.services.base.utils.RequestReader;
 import org.apache.commons.logging.Log;
@@ -24,7 +25,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -37,9 +40,8 @@ public class MoveService extends AbstractRestService {
     private Type typeMappingCollectionType;
     private Type resultsType;
 
-    public MoveService(Log log, HttpServletRequest request, HttpServletResponse response,
-                       RestRequest restRequest, TeamRawService parentService, PathParameters pathParameters) {
-        super(log, request, response, restRequest, parentService, pathParameters);
+    public MoveService(String uri, Log log, HttpServletRequest request, HttpServletResponse response, Configuration configuration, TeamRawService parentService, PathParameters pathParameters) {
+        super(uri, log, request, response, configuration, parentService, pathParameters);
         this.workItemServer = parentService.getService(IWorkItemServer.class);
         this.monitor = new NullProgressMonitor();
         this.gson = new GsonBuilder().serializeNulls().create();
@@ -60,7 +62,8 @@ public class MoveService extends AbstractRestService {
         Collection<AttributeDefinition> moveResults = null;
 
         // read request data
-        JsonObject workItemData = RequestReader.readAsJson(request);
+        JsonObject workItemData = RequestReader.readAsJson(request, "UTF-8");
+
         JsonPrimitive previewPrimitive = workItemData.getAsJsonPrimitive("previewOnly");
         JsonPrimitive skipEmailPrimitive = workItemData.getAsJsonPrimitive("skipEmail");
         JsonPrimitive removeRankPrimitive = workItemData.getAsJsonPrimitive("removeRank");
@@ -94,6 +97,10 @@ public class MoveService extends AbstractRestService {
             // resolve project area
             IProjectAreaHandle targetArea = ProjectAreaHelpers.getProjectArea(targetPA.getAsString(), parentService);
 
+            if(targetArea == null) {
+                throw new TeamRepositoryException("The target project area provided by the client plugin cannot be found on the server!");
+            }
+
             // prepare movement and track fields to be changed
 			MovePreparationResult preparationResult = mover.PrepareMove(items, targetArea, clientMappingDefinitions, typeMap, removeRank);
 
@@ -118,17 +125,14 @@ public class MoveService extends AbstractRestService {
             }
 		} catch (Exception e) {
             // Inform the user the the items could not be moved
-            error = e.getMessage();
-            if(error == null) {
-                error = e.toString();
-            }
+            error = e.toString();
 		}
 
 		if(error != null) {
             responseJson.addProperty("error", error);
         }
 
-        // prepare data to be returend
+        // prepare data to be returned
         responseJson.addProperty("successful", isMoved);
         responseJson.add("mapping", gson.toJsonTree(moveResults, resultsType));
         response.getWriter().write(gson.toJson(responseJson));

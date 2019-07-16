@@ -11,7 +11,6 @@ public final class RankHelpers {
     public static void unsetRank(IWorkItem wi, IWorkItemServer wiSrv) throws TeamRepositoryException {
         IAttribute attr = wiSrv.findAttribute(wi.getProjectArea(), RANK_ATTR_ID, null);
         if(wi.hasAttribute(attr)) {
-            Object existing = wi.getValue(attr);
             wi.removeCustomAttribute(attr);
         }
     }

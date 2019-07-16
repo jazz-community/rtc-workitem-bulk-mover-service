@@ -10,8 +10,8 @@ import com.ibm.team.workitem.common.model.IWorkItemType;
 import com.ibm.team.workitem.service.IWorkItemServer;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.helpers.WorkItemTypeHelpers;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.helpers.ProjectAreaHelpers;
+import com.siemens.bt.jazz.services.base.configuration.Configuration;
 import com.siemens.bt.jazz.services.base.rest.parameters.PathParameters;
-import com.siemens.bt.jazz.services.base.rest.parameters.RestRequest;
 import com.siemens.bt.jazz.services.base.rest.service.AbstractRestService;
 import org.apache.commons.logging.Log;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -25,13 +25,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class ProjectAreaTypeService extends AbstractRestService {
-    public ProjectAreaTypeService(Log log, HttpServletRequest request, HttpServletResponse response,
-                                  RestRequest restRequest, TeamRawService parentService, PathParameters pathParameters) {
-        super(log, request, response, restRequest, parentService, pathParameters);
+
+    public ProjectAreaTypeService(String uri, Log log, HttpServletRequest request, HttpServletResponse response, Configuration configuration, TeamRawService parentService, PathParameters pathParameters) {
+        super(uri, log, request, response, configuration, parentService, pathParameters);
     }
 
     public void execute() throws IOException, URISyntaxException {
-        String pa = restRequest.getParameterValue("project-area");
+        String pa = request.getParameter("project-area");
         Map<String, JsonElement> typeMap = new TreeMap<String, JsonElement>();
         try {
             IProjectAreaHandle targetArea = ProjectAreaHelpers.getProjectArea(pa, parentService);

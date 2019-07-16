@@ -9,8 +9,8 @@ import com.ibm.team.repository.common.IContributorHandle;
 import com.ibm.team.repository.service.IRepositoryItemService;
 import com.ibm.team.repository.service.TeamRawService;
 import com.siemens.bt.jazz.services.WorkItemBulkMover.rtc.models.ProjectArea;
+import com.siemens.bt.jazz.services.base.configuration.Configuration;
 import com.siemens.bt.jazz.services.base.rest.parameters.PathParameters;
-import com.siemens.bt.jazz.services.base.rest.parameters.RestRequest;
 import com.siemens.bt.jazz.services.base.rest.service.AbstractRestService;
 import org.apache.commons.logging.Log;
 
@@ -20,14 +20,13 @@ import java.util.*;
 
 public class ProjectAreaService extends AbstractRestService {
 
-    public ProjectAreaService(Log log, HttpServletRequest request, HttpServletResponse response,
-                              RestRequest restRequest, TeamRawService parentService, PathParameters pathParameters) {
-        super(log, request, response, restRequest, parentService, pathParameters);
+    public ProjectAreaService(String uri, Log log, HttpServletRequest request, HttpServletResponse response, Configuration configuration, TeamRawService parentService, PathParameters pathParameters) {
+        super(uri, log, request, response, configuration, parentService, pathParameters);
     }
 
     public void execute() {
         Gson googleJson = new Gson();
-        String ignoredProjectAreas = restRequest.getParameterValue("ignore");
+        String ignoredProjectAreas = request.getParameter("ignore");
         List<String> ignorePrjAreaList;
         if(ignoredProjectAreas != null && ignoredProjectAreas.length() > 0) {
             ignorePrjAreaList = Arrays.asList(ignoredProjectAreas.split(","));

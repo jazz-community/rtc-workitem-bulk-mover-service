@@ -1,12 +1,5 @@
 package com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.operations;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.WorkItemMoveMapper;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-
 import com.ibm.team.links.common.IItemReference;
 import com.ibm.team.links.common.ILink;
 import com.ibm.team.links.common.ILinkQueryPage;
@@ -21,15 +14,15 @@ import com.ibm.team.workitem.common.internal.CopyToProjectOperation;
 import com.ibm.team.workitem.common.internal.model.Attachment;
 import com.ibm.team.workitem.common.internal.util.EMFHelper;
 import com.ibm.team.workitem.common.internal.util.PermissionContext;
-import com.ibm.team.workitem.common.model.IAttachment;
-import com.ibm.team.workitem.common.model.IAttachmentHandle;
-import com.ibm.team.workitem.common.model.ITimeSheetEntry;
-import com.ibm.team.workitem.common.model.IWorkItem;
-import com.ibm.team.workitem.common.model.IWorkItemReferences;
-import com.ibm.team.workitem.common.model.IWorkItemType;
-import com.ibm.team.workitem.common.model.WorkItemEndPoints;
+import com.ibm.team.workitem.common.model.*;
 import com.ibm.team.workitem.service.IWorkItemServer;
+import com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models.WorkItemMoveMapper;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.ecore.EObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The Core Operation responsible for moving work items from one project area to another

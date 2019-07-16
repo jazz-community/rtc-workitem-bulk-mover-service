@@ -2,7 +2,6 @@ package com.siemens.bt.jazz.services.WorkItemBulkMover.bulkMover.models;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import com.siemens.bt.jazz.services.WorkItemBulkMover.rtc.models.WorkItem;
 
 import java.util.ArrayList;
 import java.util.List;
